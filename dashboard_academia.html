@@ -63,6 +63,8 @@ svg.i{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .banner-x:hover{color:var(--text);background:rgba(255,255,255,.06)}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:120;background:var(--surface-2);border:1px solid var(--border);border-left:3px solid var(--red-500);border-radius:10px;padding:10px 16px;font-size:13px;box-shadow:0 16px 40px rgba(0,0,0,.55);max-width:calc(100vw - 32px)}
 #tip{position:fixed;z-index:130;max-width:300px;padding:10px 12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:12px;line-height:1.5;box-shadow:0 14px 34px rgba(0,0,0,.55);pointer-events:none}
+#tip b{display:block;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--red-300);margin-bottom:3px}
+#tip .dec{margin-top:9px;padding-top:9px;border-top:1px solid var(--border)}
 
 /* ---------- Filtros ---------- */
 .filterbar{position:sticky;top:0;z-index:40;background:rgba(11,11,12,.9);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
@@ -134,8 +136,9 @@ main{max-width:1600px;margin:0 auto;padding:22px 28px 36px}
 .kpi:hover{box-shadow:0 0 0 1px rgba(166,58,64,.25)}
 .kpi::before{content:"";position:absolute;left:0;top:16px;bottom:16px;width:2px;border-radius:2px;background:var(--red-600)}
 .kpi-top{display:flex;justify-content:space-between;align-items:center;gap:6px}
-.kpi-label{font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.kpi-val{font:600 25px/1.15 var(--f-head);margin:9px 0 6px;letter-spacing:-.015em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi-sub{font-size:11px;color:var(--text-muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi-label{font-size:11px;color:#C9C6C8;font-weight:700;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi-val{font:600 25px/1.15 var(--f-head);margin:8px 0 6px;letter-spacing:-.015em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .kpi-val.neg{color:var(--red-300)}
 .kpi-val.txt{font-size:20px}
 .kpi-ref{font-size:11.5px;color:var(--text-muted);display:flex;flex-wrap:wrap;gap:3px 8px;line-height:1.35}
@@ -156,6 +159,8 @@ main{max-width:1600px;margin:0 auto;padding:22px 28px 36px}
 .al-sev{font-size:9.5px;font-weight:700;letter-spacing:.09em;color:var(--text-muted);text-transform:uppercase}
 .al-t{font-weight:600;font-size:13.5px;margin-top:1px}
 .al-s{font-size:12px;color:var(--text-muted);margin-top:2px}
+.al-a{font-size:12px;color:var(--text);margin-top:6px}
+.al-a::before{content:"→ ";color:var(--red-300);font-weight:700}
 
 /* ---------- Tabelas ---------- */
 .tbl-tools{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap}
@@ -415,6 +420,8 @@ function uniq(a){ return [...new Set(a.filter(v => v != null && v !== ''))]; }
 const mkey = d => d ? `${d.getFullYear()}-${pad(d.getMonth()+1)}` : null;
 const mlabel = k => { if(!k) return '—'; const [y,m] = k.split('-'); return `${MES[+m-1]}/${y.slice(2)}`; };
 const addMonths = (k, n) => { const [y,m] = k.split('-').map(Number); return mkey(new Date(y, m-1+n, 1)); };
+/* Variação contra o mês anterior (só aparece quando há base no mês anterior) */
+function momTrend(cur, prev, fmtDelta){ if (!(prev > 0)) return null; const d = cur - prev; if (Math.abs(d) < 1e-9) return null; return {up: d > 0, bad: d < 0, t: `${fmtDelta(d, prev)} vs mês anterior`}; }
 const icon = id => `<svg class="i"><use href="#ic-${id}"/></svg>`;
 
 /* Tema único ECharts */
@@ -664,7 +671,13 @@ function computeView(){
   const peAl = ticket > 0 ? Math.ceil(peR / ticket) : null;                                          // Correção 7
   const tCap = tur.filter(t => t.capacidade > 0);
   const ocupMedia = avg(tCap.map(t => t.ocup));                                                      // Correção 6
-  return {al, ativos, canc, rec, des, leads, tur, tCap, ticket, churnReal, prev, receb, inad, novosLeads, cacReal, cac, ltv, ltvCac, peR, peAl, ocupMedia, despTot: sum(des, 'valor')};
+  /* Fotografia da base no fim do mês de referência e do mês anterior (comparativo) */
+  const refK = f.periodo || BASE.months[Math.max(0, BASE.lastRealIdx)];
+  const endOf = k => { const [y, m] = k.split('-').map(Number); return new Date(y, m, 0, 23, 59); };
+  const snap = k => { const d = endOf(k); const at = D.alunos.filter(a => inMod(a.modalidade) && (!f.plano || a.plano === f.plano) && (!f.origem || a.origem === f.origem) && a.matricula && a.matricula <= d && (a.status !== 'Cancelado' || (a.cancelamento && a.cancelamento > d))); return {n: at.length, mrr: sum(at, 'mensalidade')}; };
+  const snapCur = snap(refK), snapPrev = snap(addMonths(refK, -1));
+  const mrr = sum(ativos, 'mensalidade');
+  return {mrr, snapCur, snapPrev, al, ativos, canc, rec, des, leads, tur, tCap, ticket, churnReal, prev, receb, inad, novosLeads, cacReal, cac, ltv, ltvCac, peR, peAl, ocupMedia, despTot: sum(des, 'valor')};
 }
 
 function projection(s){
@@ -793,7 +806,7 @@ const PAGE_LAYOUT = {
     {id:'dreTable', t:'DRE gerencial · 12 meses', s:'Colunas com fundo destacado são projeções a partir das premissas', span:12, html:true, ap:['periodo']},
   ]},
   students: {title:'Alunos & Retenção', desc:'Base de alunos, cancelamentos e evolução da retenção.', kpis:5, cards:[
-    {id:'churnLines', t:'Churn × retenção · 12 meses', s:'Aba Churn_Cancelamentos (recalculada)', span:6, h:300, ap:['periodo']},
+    {id:'churnLines', t:'Churn Rate × Retention Rate · 12 meses', s:'Taxa de cancelamento e de retenção mês a mês', span:6, h:300, ap:['periodo']},
     {id:'movStack', t:'Movimentação da base · 12 meses', s:'Novos e cancelamentos (colunas) e base final (linha)', span:6, h:300, ap:['periodo']},
     {id:'planoPie', t:'Alunos por plano', s:'Clique para filtrar', span:4, h:300, ap:['modalidade','plano','status','origem','periodo']},
     {id:'origemStatus', t:'Alunos por origem e status', s:'Clique numa coluna para filtrar pela origem', span:8, h:300, ap:['modalidade','plano','status','origem','periodo']},
@@ -807,7 +820,7 @@ const PAGE_LAYOUT = {
     {id:'perdas', t:'Motivos de perda', s:'Leads que não viraram matrícula', span:3, html:true, ap:['periodo','modalidade','origem']},
   ]},
   ops: {title:'Operação', desc:'Turmas, grade horária, ocupação e rentabilidade por turma e modalidade.', kpis:5, cards:[
-    {id:'ocupTurma', t:'Ocupação por turma', s:'Linhas de referência em 80% (alta) e 50% (média)', span:7, h:310, ap:['modalidade','professor'], legend:'status'},
+    {id:'ocupTurma', t:'Taxa de ocupação por turma', s:'Linhas de referência em 80% (alta) e 50% (média)', span:7, h:310, ap:['modalidade','professor'], legend:'status'},
     {id:'heatmap', t:'Mapa de calor · dia × horário', s:'Ocupação das turmas em cada dia e faixa', span:5, h:310, ap:['modalidade','professor']},
     {id:'faixas', t:'Capacidade × matriculados × presença por faixa', s:'Aba Ocupacao_Horarios · faixas vazias = oportunidade de grade', span:7, h:300, ap:[]},
     {id:'margemTurma', t:'Margem estimada por turma', s:'Receita potencial − custo mensal', span:5, h:300, ap:['modalidade','professor']},
@@ -916,7 +929,8 @@ const prevKpi = {};
 function renderKpis(pid, list){
   const el = document.getElementById('kpi-' + pid);
   el.innerHTML = list.map(k => `<div class="kpi" data-k="${k.id}">
-    <div class="kpi-top"><span class="kpi-label" title="${esc(k.label)}">${esc(k.label)}</span><button class="info" type="button" data-tip="${esc(k.tip)}" aria-label="Como é calculado: ${esc(k.label)}">i</button></div>
+    <div class="kpi-top"><span class="kpi-label" title="${esc(k.label)}">${esc(k.label)}</span><button class="info" type="button" data-tip="${esc(k.tip)}"${k.dec ? ` data-dec="${esc(k.dec)}"` : ''} aria-label="Como é calculado e que decisão apoia: ${esc(k.label)}">i</button></div>
+    ${k.sub ? `<div class="kpi-sub" title="${esc(k.sub)}">${esc(k.sub)}</div>` : ''}
     <div class="kpi-val${k.neg ? ' neg' : ''}${k.txt ? ' txt' : ''}">${k.v == null ? '—' : k.f(k.v)}</div>
     <div class="kpi-ref">${k.trend ? `<span class="tr ${k.trend.bad ? 'bad' : 'good'}">${k.trend.up ? '▲' : '▼'} ${k.trend.t}</span>` : ''}${k.ref ? `<span>${k.ref}</span>` : ''}</div></div>`).join('');
   list.forEach(k => {
@@ -933,7 +947,10 @@ function countUp(node, from, to, fmt){
 }
 const tipEl = document.getElementById('tip');
 function showTip(t){
-  tipEl.textContent = t.dataset.tip; tipEl.hidden = false;
+  const dec = t.dataset.dec;
+  if (dec) tipEl.innerHTML = `<b>Como é calculado</b>${esc(t.dataset.tip)}<div class="dec"><b>Que decisão apoia</b>${esc(dec)}</div>`;
+  else tipEl.textContent = t.dataset.tip;
+  tipEl.hidden = false;
   const r = t.getBoundingClientRect(), w = tipEl.offsetWidth, h = tipEl.offsetHeight;
   let left = Math.min(Math.max(8, r.left + r.width/2 - w/2), window.innerWidth - w - 8);
   let top = r.bottom + 8; if (top + h > window.innerHeight - 8) top = r.top - h - 8;
@@ -960,19 +977,21 @@ function showWarnings(list, title){
 function renderOverview(V){
   const P = DATA.prem, B = BASE, at = V.ativos.length;
   const cacTrend = V.cacReal != null && P.cac ? {up: V.cacReal > P.cac, bad: V.cacReal > P.cac, t: `${F.pct(Math.abs(V.cacReal/P.cac - 1))} vs premissa`} : null;
+  const momN = momTrend(V.snapCur.n, V.snapPrev.n, d => `${d > 0 ? '+' : '−'}${F.int(Math.abs(d))} alunos`);
+  const momR = momTrend(V.snapCur.mrr, V.snapPrev.mrr, (d, p) => F.pct(Math.abs(d) / p));
   renderKpis('overview', [
-    {id:'ativos', label:'Alunos ativos', v:at, f:F.int, ref:`<strong>${F.pct(P.meta ? at/P.meta : 0)}</strong> da meta de ${F.int(P.meta)}`, tip:'Contagem de alunos com Status = Ativo na aba Alunos (respeita os filtros).'},
-    {id:'receb', label:'Receita recebida', v:V.receb, f:F.money, ref:`de ${F.money(V.prev)} previstos`, tip:'Soma de “Valor Recebido” na aba Receitas (mensalidades + produtos).'},
-    {id:'ticket', label:'Ticket médio', v:V.ticket, f:F.brl, ref:'mensalidade média dos ativos', tip:'Soma das mensalidades dos alunos ATIVOS ÷ nº de ativos. Correção: o modelo somava também as mensalidades dos cancelados (R$ 196).'},
-    {id:'churn', label:'Churn real', v:V.churnReal, f:F.pct, trend: V.churnReal > P.churn ? {up:true, bad:true, t:`acima da premissa (${F.pct(P.churn)})`} : {up:false, bad:false, t:`dentro da premissa (${F.pct(P.churn)})`}, tip:'Churn real do período = cancelados ÷ (ativos + cancelados). As séries de 12 meses usam a aba Churn_Cancelamentos e o LTV usa o churn mensal da premissa.'},
-    {id:'cac', label:V.cacReal != null ? 'CAC real' : 'CAC (premissa)', v:V.cac, f:F.brl, trend:cacTrend, ref: V.cacReal != null ? `premissa ${F.brl(P.cac)}` : 'sem matrículas no funil', tip:'Soma do CAC dos leads ÷ leads matriculados. Sem matrículas no filtro, usa o CAC estimado das premissas.'},
-    {id:'ltv', label:'LTV', v:V.ltv, f:F.money, ref:`${F.brl(V.ticket)} × ${F.pct0(P.margem)} ÷ ${F.pct0(P.churn)}`, tip:'Ticket médio × margem de contribuição ÷ churn mensal (premissa). Correção: o modelo usava o CAC no lugar da margem e chegava a R$ 392.000.'},
-    {id:'ltvcac', label:'LTV/CAC', v:V.ltvCac, f:F.x, trend: V.ltvCac >= 3 ? {up:true, bad:false, t:'saudável (≥ 3)'} : {up:false, bad:true, t:'abaixo de 3'}, tip:'Quanto cada R$ 1 investido em aquisição retorna em margem ao longo da vida do aluno. Referência saudável: ≥ 3.'},
-    {id:'margem', label:'Margem de contribuição', v:P.margem, f:F.pct, ref:'premissa do modelo', tip:'Margem média após custos variáveis (premissa). A margem do mês realizado aparece em detalhe na cascata do Financeiro.'},
-    {id:'pe', label:'Ponto de equilíbrio', v:V.peR, f:F.brl0, ref: V.peAl != null ? `<strong>≈ ${F.int(V.peAl)} alunos</strong> no ticket atual` : 'sem ticket para converter', tip:'Receita mensal necessária = custos fixos ÷ margem de contribuição. Em alunos = ponto de equilíbrio ÷ ticket médio.'},
-    {id:'ocup', label:'Ocupação média', v:V.ocupMedia, f:F.pct, ref:`${V.tCap.length} turmas com capacidade`, trend: V.ocupMedia >= .8 ? {up:true, bad:false, t:'alta'} : V.ocupMedia < .5 ? {up:false, bad:true, t:'baixa'} : null, tip:'Média de Matriculados ÷ Capacidade, apenas turmas com capacidade > 0.'},
-    {id:'novos', label:'Novos alunos', v:V.al.length, f:F.int, ref:`${F.int(V.novosLeads)} vindos do funil de leads`, tip:'Matrículas registradas na aba Alunos no período filtrado. Referência: leads com “Matriculou = Sim”.'},
-    {id:'inad', label:'Inadimplência', v:V.inad, f:F.pct, trend: V.inad > (1 - P.taxaReceb) ? {up:true, bad:true, t:`acima de ${F.pct(1 - P.taxaReceb)}`} : null, ref:`${F.money(V.prev - V.receb)} em aberto`, tip:'(Valor previsto − valor recebido) ÷ valor previsto, na aba Receitas.'},
+    {id:'ativos', label:'Alunos ativos', sub:'Base atual de alunos', v:at, f:F.int, trend:momN, ref:`<strong>${F.pct(P.meta ? at/P.meta : 0)}</strong> da meta de ${F.int(P.meta)}`, tip:'Contagem de alunos com Status = Ativo na aba Alunos (respeita os filtros).', dec:'Abaixo da meta: concentre a captação nos canais que mais convertem (página Comercial) e acompanhe o churn.'},
+    {id:'mrr', label:'MRR', sub:'Receita recorrente mensal', v:V.mrr, f:F.money, trend:momR, ref:`mensalidades de ${F.int(at)} aluno${at === 1 ? '' : 's'} ativo${at === 1 ? '' : 's'}`, tip:'Monthly Recurring Revenue: soma das mensalidades dos alunos ativos, a receita que se repete todo mês, sem vendas avulsas de produtos.', dec:'É a parte previsível do caixa. Use-a para planejar contratações e investimentos; para crescer, aumente a base ou o ticket.'},
+    {id:'receb', label:'Receita recebida', sub:'Entrada de caixa no período', v:V.receb, f:F.money, ref:`de ${F.money(V.prev)} previstos`, tip:'Soma de “Valor Recebido” na aba Receitas (mensalidades + produtos).', dec:'Muito abaixo do previsto indica falha na cobrança: acione os pendentes e incentive o pagamento recorrente.'},
+    {id:'ticket', label:'Ticket médio', sub:'Mensalidade média por aluno', v:V.ticket, f:F.brl, ref:'só alunos ativos', tip:'Soma das mensalidades dos alunos ATIVOS ÷ nº de ativos.', dec:'Ticket baixo: ofereça planos combinados (ex.: Multitreino) ou revise a tabela de preços.'},
+    {id:'churn', label:'Churn Rate', sub:'Taxa de cancelamento', v:V.churnReal, f:F.pct, trend: V.churnReal > P.churn ? {up:true, bad:true, t:`acima da premissa (${F.pct(P.churn)})`} : {up:false, bad:false, t:`dentro da premissa (${F.pct(P.churn)})`}, tip:'Cancelados ÷ (ativos + cancelados) no período. As séries de 12 meses usam a aba Churn_Cancelamentos e o LTV usa o churn mensal da premissa.', dec:'Se subir, contate os alunos com baixa frequência e reforce o acompanhamento nos primeiros 60 dias.'},
+    {id:'cac', label:'CAC', sub: V.cacReal != null ? 'Custo de aquisição por aluno' : 'Custo de aquisição (premissa)', v:V.cac, f:F.brl, trend:cacTrend, ref: V.cacReal != null ? `premissa ${F.brl(P.cac)}` : 'sem matrículas no funil', tip:'Customer Acquisition Cost: soma do CAC dos leads ÷ leads matriculados. Sem matrículas no filtro, usa o CAC estimado das premissas.', dec:'CAC alto: corte os canais caros e concentre o investimento nos que mais convertem.'},
+    {id:'ltv', label:'LTV', sub:'Valor gerado pelo aluno', v:V.ltv, f:F.money, ref:`${F.brl(V.ticket)} × ${F.pct0(P.margem)} ÷ ${F.pct0(P.churn)}`, tip:'Lifetime Value: ticket médio × margem de contribuição ÷ churn mensal (premissa).', dec:'Cresce quando o aluno fica mais tempo ou paga mais: invista em retenção e em planos de maior valor.'},
+    {id:'ltvcac', label:'LTV/CAC', sub:'Retorno do custo de aquisição', v:V.ltvCac, f:F.x, trend: V.ltvCac >= 3 ? {up:true, bad:false, t:'saudável (≥ 3x)'} : {up:false, bad:true, t:'abaixo de 3x'}, tip:'Quanto cada R$ 1 investido para conquistar um aluno retorna em margem ao longo da vida dele.', dec:'Abaixo de 3x, a aquisição está cara. Acima de 5x, há espaço para investir mais em marketing.'},
+    {id:'pe', label:'Break-even', sub:'Ponto de equilíbrio mensal', v:V.peR, f:F.brl0, ref: V.peAl != null ? `<strong>≈ ${F.int(V.peAl)} alunos</strong> · margem ${F.pct0(P.margem)}` : `margem ${F.pct0(P.margem)}`, tip:'Receita mensal necessária = custos fixos ÷ margem de contribuição. Em alunos = break-even ÷ ticket médio.', dec:'É a meta mínima do comercial: abaixo desse faturamento a academia opera no prejuízo.'},
+    {id:'ocup', label:'Taxa de ocupação', sub:'Uso da capacidade das turmas', v:V.ocupMedia, f:F.pct, ref:`${V.tCap.length} turmas com capacidade`, trend: V.ocupMedia >= .8 ? {up:true, bad:false, t:'alta'} : V.ocupMedia < .5 ? {up:false, bad:true, t:'baixa'} : null, tip:'Média de Matriculados ÷ Capacidade, apenas turmas com capacidade > 0.', dec:'Abaixo de 50%: junte turmas ou mude o horário. Acima de 80%: abra novas turmas.'},
+    {id:'novos', label:'Novos alunos', sub:'Matrículas no período', v:V.al.length, f:F.int, ref:`${F.int(V.novosLeads)} vindos do funil de leads`, tip:'Matrículas registradas na aba Alunos no período filtrado. Referência: leads com “Matriculou = Sim”.', dec:'Compare com os cancelamentos: a base só cresce se as matrículas superarem as saídas.'},
+    {id:'inad', label:'Inadimplência', sub:'Receita prevista não recebida', v:V.inad, f:F.pct, trend: V.inad > (1 - P.taxaReceb) ? {up:true, bad:true, t:`acima de ${F.pct(1 - P.taxaReceb)}`} : null, ref:`${F.money(V.prev - V.receb)} em aberto`, tip:'(Valor previsto − valor recebido) ÷ valor previsto, na aba Receitas.', dec:'Acima de 3%: automatize lembretes de cobrança e priorize PIX ou cartão recorrente.'},
   ]);
 
   /* Gauge */
@@ -1019,22 +1038,22 @@ function renderOverview(V){
 function renderAlerts(V){
   const P = DATA.prem, B = BASE, A = [];
   const neg = B.dre.filter(m => m.res < 0).length, acc = sum(B.dre, 'res');
-  if (neg === 12) A.push({sev:'high', ic:'down', t:'Resultado operacional negativo em todos os 12 meses', s:`Déficit acumulado de ${F.brl0(Math.abs(acc))} no horizonte (realizado + projetado).`});
-  else if (neg > 0) A.push({sev:'high', ic:'down', t:`Resultado operacional negativo em ${neg} de 12 meses`, s:`Resultado acumulado de ${F.brl0(acc)}.`});
+  if (neg === 12) A.push({sev:'high', ic:'down', t:'Resultado operacional negativo em todos os 12 meses', s:`Déficit acumulado de ${F.brl0(Math.abs(acc))} no horizonte (realizado + projetado).`, a:'Use o simulador (Projeções) para testar mais alunos, reajuste de ticket e corte de custos.'});
+  else if (neg > 0) A.push({sev:'high', ic:'down', t:`Resultado operacional negativo em ${neg} de 12 meses`, s:`Resultado acumulado de ${F.brl0(acc)}.`, a:'Use o simulador (Projeções) para testar as alavancas de receita e custo.'});
   const pctMeta = P.meta ? V.ativos.length / P.meta : 0;
-  A.push({sev: pctMeta < .5 ? 'high' : pctMeta < 1 ? 'mid' : 'info', ic:'target', t:`Base atual = ${F.pct(pctMeta)} da meta`, s:`${F.int(V.ativos.length)} de ${F.int(P.meta)} alunos ativos · faltam ${F.int(Math.max(0, P.meta - V.ativos.length))}.`});
+  A.push({sev: pctMeta < .5 ? 'high' : pctMeta < 1 ? 'mid' : 'info', ic:'target', t:`Base atual = ${F.pct(pctMeta)} da meta`, s:`${F.int(V.ativos.length)} de ${F.int(P.meta)} alunos ativos · faltam ${F.int(Math.max(0, P.meta - V.ativos.length))}.`, a:'Concentre a captação nos canais com maior taxa de conversão (página Comercial).'});
   const low = V.tCap.filter(t => t.ocup < .5).sort((a, b) => a.ocup - b.ocup)[0];
-  if (low) A.push({sev:'mid', ic:'grid', t:`Turma ${low.codigo} com ocupação de ${F.pct0(low.ocup)}`, s:`${F.int(low.matriculados)} de ${F.int(low.capacidade)} vagas · ${low.modalidade} · ${low.dia} ${low.horario} · ${low.professor}.`});
-  if (V.prev && V.inad > (1 - P.taxaReceb)) A.push({sev:'mid', ic:'wallet', t:`Inadimplência de ${F.pct(V.inad)}`, s:`${F.money(V.prev - V.receb)} em aberto — acima dos ${F.pct(1 - P.taxaReceb)} esperados pela premissa.`});
-  if (V.ltvCac > 0 && V.ltvCac < 3) A.push({sev:'high', ic:'scale', t:`LTV/CAC abaixo de 3 (${F.x(V.ltvCac)})`, s:'A aquisição está cara frente à margem gerada por aluno.'});
+  if (low) A.push({sev:'mid', ic:'grid', t:`Turma ${low.codigo} com ocupação de ${F.pct0(low.ocup)}`, s:`${F.int(low.matriculados)} de ${F.int(low.capacidade)} vagas · ${low.modalidade} · ${low.dia} ${low.horario} · ${low.professor}.`, a:'Avalie juntar com outra turma, mudar o horário ou fazer uma campanha para a modalidade.'});
+  if (V.prev && V.inad > (1 - P.taxaReceb)) A.push({sev:'mid', ic:'wallet', t:`Inadimplência de ${F.pct(V.inad)}`, s:`${F.money(V.prev - V.receb)} em aberto — acima dos ${F.pct(1 - P.taxaReceb)} esperados pela premissa.`, a:'Acione os pendentes e ofereça PIX ou cartão recorrente.'});
+  if (V.ltvCac > 0 && V.ltvCac < 3) A.push({sev:'high', ic:'scale', t:`LTV/CAC abaixo de 3 (${F.x(V.ltvCac)})`, s:'A aquisição está cara frente à margem gerada por aluno.', a:'Corte os canais mais caros e invista em retenção.'});
   const mods = groupMod(V.tur).filter(m => m.margem < 0).sort((a, b) => a.margem - b.margem);
-  if (mods.length) A.push({sev:'mid', ic:'down', t:`${mods[0].name} opera com margem negativa`, s:`${F.brl0(mods[0].margem)}/mês: custo das turmas maior que a receita potencial.`});
+  if (mods.length) A.push({sev:'mid', ic:'down', t:`${mods[0].name} opera com margem negativa`, s:`${F.brl0(mods[0].margem)}/mês: custo das turmas maior que a receita potencial.`, a:'Revise o custo das turmas ou o preço da modalidade.'});
   const sem = DATA.ocupacao.filter(o => o.capacidade <= 0);
-  if (sem.length) A.push({sev:'info', ic:'clock', t:`${sem.length} faixa${sem.length > 1 ? 's' : ''} horária${sem.length > 1 ? 's' : ''} sem turma`, s:`${sem.map(o => o.horario).join(', ')} — oportunidade de grade.`});
-  if (V.ltvCac >= 3) A.push({sev:'info', ic:'check', t:`LTV/CAC saudável: ${F.x(V.ltvCac)}`, s:'Cada R$ 1 em aquisição retorna mais de R$ 3 em margem.'});
-  const list = A.slice(0, 5), sevLabel = {high:'Crítico', mid:'Atenção', info:'Informativo'};
+  if (sem.length) A.push({sev:'info', ic:'clock', t:`${sem.length} faixa${sem.length > 1 ? 's' : ''} horária${sem.length > 1 ? 's' : ''} sem turma`, s:`${sem.map(o => o.horario).join(', ')} — oportunidade de grade.`, a:'Teste novas turmas nesses horários para usar o espaço ocioso.'});
+  if (V.ltvCac >= 3) A.push({sev:'info', ic:'check', t:`LTV/CAC saudável: ${F.x(V.ltvCac)}`, s:'Cada R$ 1 em aquisição retorna mais de R$ 3 em margem.', a:'Há espaço para investir mais em captação de alunos.'});
+  const list = A.slice(0, 4), sevLabel = {high:'Crítico', mid:'Atenção', info:'Informativo'};
   setBadge('alerts');
-  document.getElementById('hb-alerts').innerHTML = `<div class="alerts">${list.map(a => `<div class="alert ${a.sev}"><span class="al-ic">${icon(a.ic)}</span><div><div class="al-sev">${sevLabel[a.sev]}</div><div class="al-t">${esc(a.t)}</div><div class="al-s">${esc(a.s)}</div></div></div>`).join('')}</div>`;
+  document.getElementById('hb-alerts').innerHTML = `<div class="alerts">${list.map(a => `<div class="alert ${a.sev}"><span class="al-ic">${icon(a.ic)}</span><div><div class="al-sev">${sevLabel[a.sev]}</div><div class="al-t">${esc(a.t)}</div><div class="al-s">${esc(a.s)}</div>${a.a ? `<div class="al-a">${esc(a.a)}</div>` : ''}</div></div>`).join('')}</div>`;
 }
 
 /* ---------- 7.2 Financeiro ---------- */
@@ -1042,11 +1061,11 @@ function renderFinance(V){
   const P = DATA.prem, B = BASE, f = state.filters;
   const res = V.receb - V.despTot;
   renderKpis('finance', [
-    {id:'prev', label:'Receita prevista', v:V.prev, f:F.money, ref:`${F.int(V.rec.length)} lançamentos`, tip:'Soma de “Valor Previsto” na aba Receitas.'},
-    {id:'receb', label:'Receita recebida', v:V.receb, f:F.money, ref:`${F.pct(V.prev ? V.receb/V.prev : 0)} do previsto`, tip:'Soma de “Valor Recebido” na aba Receitas.'},
-    {id:'desp', label:'Despesas totais', v:V.despTot, f:F.money, ref:`${F.int(V.des.length)} lançamentos`, tip:'Soma de “Valor” na aba Despesas (fixas + variáveis).'},
-    {id:'res', label: f.periodo ? `Resultado · ${mlabel(f.periodo)}` : 'Resultado do período', v:res, f:F.money, neg: res < 0, trend: res < 0 ? {up:false, bad:true, t:'déficit'} : {up:true, bad:false, t:'superávit'}, tip:'Receita recebida − despesas totais (visão caixa, respeita os filtros).'},
-    {id:'inad', label:'Inadimplência', v:V.inad, f:F.pct, ref:`${F.money(V.prev - V.receb)} pendentes`, trend: V.inad > (1 - P.taxaReceb) ? {up:true, bad:true, t:`meta ${F.pct(1 - P.taxaReceb)}`} : null, tip:'(Previsto − recebido) ÷ previsto.'},
+    {id:'prev', label:'Receita prevista', sub:'Faturamento esperado', v:V.prev, f:F.money, ref:`${F.int(V.rec.length)} lançamentos`, tip:'Soma de “Valor Previsto” na aba Receitas.', dec:'É a referência do mês: compare com o recebido para medir a eficiência da cobrança.'},
+    {id:'receb', label:'Receita recebida', sub:'Entrada de caixa', v:V.receb, f:F.money, ref:`${F.pct(V.prev ? V.receb/V.prev : 0)} do previsto`, tip:'Soma de “Valor Recebido” na aba Receitas.', dec:'Muito abaixo do previsto indica falha na cobrança: acione os pendentes e incentive o pagamento recorrente.'},
+    {id:'desp', label:'Despesas totais', sub:'Custos fixos + variáveis', v:V.despTot, f:F.money, ref:`${F.int(V.des.length)} lançamentos`, tip:'Soma de “Valor” na aba Despesas.', dec:'Veja as categorias que mais pesam (gráfico abaixo) e ataque as maiores primeiro.'},
+    {id:'res', label: f.periodo ? `Resultado · ${mlabel(f.periodo)}` : 'Resultado do período', sub:'Lucro ou prejuízo de caixa', v:res, f:F.money, neg: res < 0, trend: res < 0 ? {up:false, bad:true, t:'déficit'} : {up:true, bad:false, t:'superávit'}, tip:'Receita recebida − despesas totais (visão caixa, respeita os filtros).', dec:'Negativo: o caixa está sendo consumido. Aumente a receita (alunos, ticket) ou reduza custos fixos.'},
+    {id:'inad', label:'Inadimplência', sub:'Receita prevista não recebida', v:V.inad, f:F.pct, ref:`${F.money(V.prev - V.receb)} pendentes`, trend: V.inad > (1 - P.taxaReceb) ? {up:true, bad:true, t:`meta ${F.pct(1 - P.taxaReceb)}`} : null, tip:'(Previsto − recebido) ÷ previsto.', dec:'Acima de 3%: automatize lembretes de cobrança e priorize PIX ou cartão recorrente.'},
   ]);
 
   /* Waterfall: período (só filtro de período) */
@@ -1137,11 +1156,11 @@ function renderStudents(V){
   const B = BASE, ativos = V.ativos;
   const tempo = avg(ativos.map(daysSince).filter(d => d != null));
   renderKpis('students', [
-    {id:'base', label:'Base ativa', v:ativos.length, f:F.int, ref:`${F.int(V.al.length)} alunos no filtro`, tip:'Alunos com Status = Ativo.'},
-    {id:'canc', label:'Cancelados no período', v:V.canc.length, f:F.int, ref: V.canc.length ? `último em ${F.date(V.canc.map(a => a.cancelamento).filter(Boolean).sort((a, b) => b - a)[0])}` : 'nenhum cancelamento', tip:'Alunos com Status = Cancelado no filtro atual.'},
-    {id:'churn', label:'Churn real', v:V.churnReal, f:F.pct, trend: V.churnReal > DATA.prem.churn ? {up:true, bad:true, t:`premissa ${F.pct(DATA.prem.churn)}`} : null, tip:'Cancelados ÷ (ativos + cancelados). Na base pequena de exemplo, 1 cancelamento pesa muito — acompanhe a série de 12 meses.'},
-    {id:'ret', label:'Retenção', v:(V.al.length ? 1 - V.churnReal : 0), f:F.pct, ref:'1 − churn real', tip:'Percentual de alunos que permanecem: 1 − churn real.'},
-    {id:'tempo', label:'Tempo médio de casa', v:tempo, f: v => `${F.int(v)} dias`, ref:'desde a matrícula dos ativos', tip:'Média de dias entre a data de matrícula e hoje, considerando somente alunos ativos.'},
+    {id:'base', label:'Base ativa', sub:'Alunos com matrícula ativa', v:ativos.length, f:F.int, ref:`${F.int(V.al.length)} alunos no filtro`, tip:'Alunos com Status = Ativo.', dec:'É o motor da receita recorrente (MRR): acompanhe junto com a meta de alunos.'},
+    {id:'canc', label:'Cancelamentos', sub:'Alunos que saíram', v:V.canc.length, f:F.int, ref: V.canc.length ? `último em ${F.date(V.canc.map(a => a.cancelamento).filter(Boolean).sort((a, b) => b - a)[0])}` : 'nenhum cancelamento', tip:'Alunos com Status = Cancelado no filtro atual.', dec:'Investigue os motivos (horário, preço, atendimento) e crie uma ação de reconquista.'},
+    {id:'churn', label:'Churn Rate', sub:'Taxa de cancelamento', v:V.churnReal, f:F.pct, trend: V.churnReal > DATA.prem.churn ? {up:true, bad:true, t:`premissa ${F.pct(DATA.prem.churn)}`} : null, tip:'Cancelados ÷ (ativos + cancelados).', dec:'Se subir, contate os alunos com baixa frequência e reforce o acompanhamento nos primeiros 60 dias.'},
+    {id:'ret', label:'Retention Rate', sub:'Taxa de retenção', v:(V.al.length ? 1 - V.churnReal : 0), f:F.pct, ref:'1 − churn rate', tip:'Percentual de alunos que permanecem: 1 − churn rate.', dec:'Quanto maior, maior o LTV. Acompanhamento de treino e metas pessoais aumentam a permanência.'},
+    {id:'tempo', label:'Tempo médio de casa', sub:'Permanência média dos ativos', v:tempo, f: v => `${F.int(v)} dias`, ref:'desde a matrícula', tip:'Média de dias entre a data de matrícula e hoje, considerando somente alunos ativos.', dec:'Os primeiros meses são os mais críticos: reforce o contato com quem tem menos de 60 dias de casa.'},
   ]);
 
   const ch = B.churn12;
@@ -1225,12 +1244,12 @@ function renderSales(V){
   const B = BASE, L = V.leads;
   const exp = L.filter(l => l.experimental).length, comp = L.filter(l => l.experimental && l.compareceu).length, mat = L.filter(l => l.matriculou).length;
   renderKpis('sales', [
-    {id:'leads', label:'Leads', v:L.length, f:F.int, ref:`${uniq(L.map(l => l.origem)).length} origens`, tip:'Total de linhas na aba Leads (respeita os filtros).'},
-    {id:'exp', label:'Experimentais', v:exp, f:F.int, ref:`${F.pct(L.length ? exp/L.length : 0)} dos leads`, tip:'Leads com Experimental = Sim.'},
-    {id:'comp', label:'Comparecimento', v: exp ? comp/exp : 0, f:F.pct, ref:`${F.int(comp)} de ${F.int(exp)}`, tip:'Compareceram ÷ agendaram experimental.'},
-    {id:'conv', label:'Conversão', v: L.length ? mat/L.length : 0, f:F.pct, ref:`${F.int(mat)} matrículas`, tip:'Leads matriculados ÷ total de leads.'},
-    {id:'cac', label:'CAC real', v:V.cacReal, f:F.brl, ref:`premissa ${F.brl(DATA.prem.cac)}`, trend: V.cacReal != null && V.cacReal > DATA.prem.cac ? {up:true, bad:true, t:'acima'} : null, tip:'Soma do CAC dos leads ÷ leads matriculados.'},
-    {id:'ltvcac', label:'LTV/CAC', v:V.ltvCac, f:F.x, trend: V.ltvCac >= 3 ? {up:true, bad:false, t:'saudável'} : {up:false, bad:true, t:'abaixo de 3'}, tip:'LTV corrigido ÷ CAC. Referência saudável: ≥ 3.'},
+    {id:'leads', label:'Leads', sub:'Interessados captados', v:L.length, f:F.int, ref:`${uniq(L.map(l => l.origem)).length} origens`, tip:'Total de linhas na aba Leads (respeita os filtros).', dec:'Volume baixo: reforce os canais com melhor conversão antes de abrir canais novos.'},
+    {id:'exp', label:'Aulas experimentais', sub:'Leads que agendaram', v:exp, f:F.int, ref:`${F.pct(L.length ? exp/L.length : 0)} dos leads`, tip:'Leads com Experimental = Sim.', dec:'Ofereça a aula experimental em todo contato: ela é a porta de entrada da matrícula.'},
+    {id:'comp', label:'Show Rate', sub:'Taxa de comparecimento', v: exp ? comp/exp : 0, f:F.pct, ref:`${F.int(comp)} de ${F.int(exp)}`, tip:'Compareceram ÷ agendaram aula experimental.', dec:'Baixa: confirme a aula por WhatsApp na véspera e no dia.'},
+    {id:'conv', label:'Conversion Rate', sub:'Taxa de conversão', v: L.length ? mat/L.length : 0, f:F.pct, ref:`${F.int(mat)} matrículas`, tip:'Leads matriculados ÷ total de leads.', dec:'Baixa: revise a abordagem depois da aula e ofereça uma condição para matrícula no mesmo dia.'},
+    {id:'cac', label:'CAC', sub:'Custo de aquisição por aluno', v:V.cacReal, f:F.brl, ref:`premissa ${F.brl(DATA.prem.cac)}`, trend: V.cacReal != null && V.cacReal > DATA.prem.cac ? {up:true, bad:true, t:'acima'} : null, tip:'Soma do CAC dos leads ÷ leads matriculados.', dec:'CAC alto: corte os canais caros e concentre o investimento nos que mais convertem.'},
+    {id:'ltvcac', label:'LTV/CAC', sub:'Retorno do custo de aquisição', v:V.ltvCac, f:F.x, trend: V.ltvCac >= 3 ? {up:true, bad:false, t:'saudável'} : {up:false, bad:true, t:'abaixo de 3x'}, tip:'LTV ÷ CAC. Referência saudável: 3x ou mais.', dec:'Abaixo de 3x, a aquisição está cara. Acima de 5x, há espaço para investir mais em marketing.'},
   ]);
   if (!L.length){ ['funnel','leadOrigem','origemConv','convMod'].forEach(id => draw(id, {}, {empty:true})); renderPerdas(V); return; }
 
@@ -1287,11 +1306,11 @@ function groupMod(tur){
 function renderOps(V){
   const T = V.tur, cap = sum(T, 'capacidade'), mat = sum(T, 'matriculados'), pres = sum(T, 'presenca');
   renderKpis('ops', [
-    {id:'turmas', label:'Turmas ativas', v:T.length, f:F.int, ref:`${uniq(T.map(t => t.modalidade)).length} modalidades · ${uniq(T.map(t => t.professor)).length} professores`, tip:'Turmas cadastradas na aba Turmas (respeita filtros de modalidade e professor).'},
-    {id:'cap', label:'Capacidade total', v:cap, f:F.int, ref:'vagas por turma somadas', tip:'Soma da capacidade das turmas.'},
-    {id:'mat', label:'Matriculados', v:mat, f:F.int, ref:`${F.int(Math.max(0, cap - mat))} vagas livres`, tip:'Soma dos matriculados nas turmas.'},
-    {id:'ocup', label:'Ocupação média', v:V.ocupMedia, f:F.pct, trend: V.ocupMedia >= .8 ? {up:true, bad:false, t:'alta'} : V.ocupMedia < .5 ? {up:false, bad:true, t:'baixa'} : null, ref:'turmas com capacidade > 0', tip:'Média simples de Matriculados ÷ Capacidade, considerando só turmas com capacidade > 0.'},
-    {id:'pres', label:'Presença média', v: mat ? pres/mat : 0, f:F.pct, ref:`${F.dec(pres)} presentes por aula`, tip:'Soma da presença média ÷ soma dos matriculados: % dos matriculados que comparecem.'},
+    {id:'turmas', label:'Turmas ativas', sub:'Grade em funcionamento', v:T.length, f:F.int, ref:`${uniq(T.map(t => t.modalidade)).length} modalidades · ${uniq(T.map(t => t.professor)).length} professores`, tip:'Turmas cadastradas na aba Turmas (respeita filtros de modalidade e professor).', dec:'Use o mapa de calor para ver onde a grade está cheia ou ociosa.'},
+    {id:'cap', label:'Capacidade total', sub:'Vagas disponíveis', v:cap, f:F.int, ref:'soma das vagas por turma', tip:'Soma da capacidade das turmas.', dec:'Compare com os matriculados para saber quanto ainda dá para crescer sem investir em espaço.'},
+    {id:'mat', label:'Matriculados', sub:'Vagas ocupadas', v:mat, f:F.int, ref:`${F.int(Math.max(0, cap - mat))} vagas livres`, tip:'Soma dos matriculados nas turmas.', dec:'Vagas livres são receita potencial: direcione campanhas para as turmas com sobra.'},
+    {id:'ocup', label:'Taxa de ocupação', sub:'Uso da capacidade', v:V.ocupMedia, f:F.pct, trend: V.ocupMedia >= .8 ? {up:true, bad:false, t:'alta'} : V.ocupMedia < .5 ? {up:false, bad:true, t:'baixa'} : null, ref:'turmas com capacidade > 0', tip:'Média simples de Matriculados ÷ Capacidade, considerando só turmas com capacidade > 0.', dec:'Abaixo de 50%: junte turmas ou mude o horário. Acima de 80%: abra novas turmas.'},
+    {id:'pres', label:'Taxa de presença', sub:'Matriculados que comparecem', v: mat ? pres/mat : 0, f:F.pct, ref:`${F.dec(pres)} presentes por aula`, tip:'Soma da presença média ÷ soma dos matriculados.', dec:'Queda de presença costuma anteceder cancelamentos: contate os alunos ausentes.'},
   ]);
   if (!T.length){ ['ocupTurma','heatmap','margemTurma'].forEach(id => draw(id, {}, {empty:true})); }
   else {
@@ -1403,10 +1422,10 @@ function syncSim(){ SIM_FIELDS.forEach(s => { document.getElementById('s-' + s.k
 function renderProj(){
   const P = DATA.prem, s = state.sim, pr = projection(s), L = BASE.labels, R = pr.rows, last = R[11];
   renderKpis('proj', [
-    {id:'res12', label:'Resultado no mês 12', v:last.res, f:F.money, neg:last.res < 0, ref:`${L[11]} · faturamento ${F.money(last.fat)}`, tip:'Faturamento projetado do mês 12 × margem de contribuição − custos fixos.'},
-    {id:'be', label:'Mês do break-even', v: pr.beIdx, f: i => i >= 0 ? L[i] : 'Não atingido', txt:true, noAnim:true, ref: pr.beIdx >= 0 ? `em ${pr.beIdx + 1} ${pr.beIdx ? 'meses' : 'mês'}` : `faturamento do mês 12 = ${F.pct(pr.pe ? last.fat / pr.pe : 0)} do necessário`, tip:'Primeiro mês em que o faturamento projetado alcança o ponto de equilíbrio (custos fixos ÷ margem).'},
-    {id:'alPE', label:'Alunos para empatar', v:pr.alunosPE, f:F.int, ref:`PE ${F.brl0(pr.pe)} ÷ ticket ${F.brl0(s.ticket)}`, tip:'Ponto de equilíbrio em R$ ÷ ticket médio simulado.'},
-    {id:'ltvS', label:'LTV simulado', v:pr.ltv, f:F.money, ref:`crescimento líquido ${pr.gNet >= 0 ? '+' : ''}${F.pct(pr.gNet)} a.m.`, tip:'Ticket × margem ÷ churn, com os valores do simulador.'},
+    {id:'res12', label:'Resultado no mês 12', sub:'Lucro ou prejuízo projetado', v:last.res, f:F.money, neg:last.res < 0, ref:`${L[11]} · faturamento ${F.money(last.fat)}`, tip:'Faturamento projetado do mês 12 × margem de contribuição − custos fixos.', dec:'Use o simulador para descobrir qual alavanca (alunos, ticket ou custos) leva o resultado ao positivo.'},
+    {id:'be', label:'Break-even', sub:'Mês em que as contas empatam', v: pr.beIdx, f: i => i >= 0 ? L[i] : 'Não atingido', txt:true, noAnim:true, ref: pr.beIdx >= 0 ? `em ${pr.beIdx + 1} ${pr.beIdx ? 'meses' : 'mês'}` : `faturamento do mês 12 = ${F.pct(pr.pe ? last.fat / pr.pe : 0)} do necessário`, tip:'Primeiro mês em que o faturamento projetado alcança o ponto de equilíbrio (custos fixos ÷ margem).', dec:'Não atingido: combine aumento da base com reajuste de ticket ou redução de custos fixos.'},
+    {id:'alPE', label:'Alunos para o break-even', sub:'Base mínima para empatar', v:pr.alunosPE, f:F.int, ref:`${F.brl0(pr.pe)} ÷ ticket ${F.brl0(s.ticket)}`, tip:'Ponto de equilíbrio em R$ ÷ ticket médio simulado.', dec:'Transforme esse número na meta mínima do time comercial.'},
+    {id:'ltvS', label:'LTV simulado', sub:'Valor do aluno no cenário', v:pr.ltv, f:F.money, ref:`crescimento líquido ${pr.gNet >= 0 ? '+' : ''}${F.pct(pr.gNet)} a.m.`, tip:'Ticket × margem ÷ churn, com os valores do simulador.', dec:'Compare com o CAC: o LTV deve ser pelo menos 3x o custo de conquistar o aluno.'},
   ]);
   const accMax = Math.max(...R.map(r => r.acum));
   draw('projFat', {

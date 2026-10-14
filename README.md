@@ -8,7 +8,7 @@ Desenvolvido por **Datalyse · Inteligência de Dados**.
 
 | Página | Destaques |
 |---|---|
-| **Visão Geral** | 12 KPIs, velocímetro da meta de alunos, resultado operacional em 12 meses, alertas automáticos |
+| **Visão Geral** | 12 KPIs (MRR, Churn Rate, CAC, LTV, LTV/CAC, Break-even…), cada um com o cálculo e a decisão que apoia; velocímetro da meta de alunos, resultado operacional em 12 meses, alertas com ação recomendada |
 | **Financeiro** | DRE em cascata, receita × custos × ponto de equilíbrio, despesas por categoria e centro de custo, saldo de caixa, DRE de 12 meses em tabela |
 | **Alunos & Retenção** | Churn × retenção, movimentação da base, alunos por plano e origem, cadastro com busca e ordenação |
 | **Comercial** | Funil de conversão, leads por origem, conversão por modalidade, motivos de perda |
