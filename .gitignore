@@ -1,0 +1,21 @@
+# Arquivos temporários do Excel
+~$*
+*.tmp
+
+# Documento interno de escopo (não vai para o repositório público)
+escopo_dashboard_academia_datalyse.md
+
+# Python / Streamlit
+__pycache__/
+*.pyc
+.venv/
+venv/
+.streamlit/secrets.toml
+
+# Sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Configuração local do Claude Code
+.claude/
