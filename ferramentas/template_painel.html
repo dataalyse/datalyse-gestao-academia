@@ -1,0 +1,1869 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gestão Executiva · Academia | Datalyse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+/* =====================================================================
+   CONFIG / TEMA — tokens de cor e tipografia
+   ===================================================================== */
+:root{
+  --bg:#0B0B0C; --surface:#141416; --surface-2:#1C1C1F; --border:#2A2A2E;
+  --text:#F2F0EE; --text-muted:#9A979A; --text-dim:#5E5B5F;
+  --red-700:#6E1F24; --red-600:#8E2A30; --red-500:#A63A40; --red-400:#C0595E; --red-300:#D48A8D; --red-200:#E6BDBE;
+  --gray-500:#6B686C; --gray-300:#B5B2B4; --grid:#222225;
+  --radius:14px;
+  --f-head:'Sora',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--f-body);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+body{overflow-x:hidden;min-height:100vh}
+.num,.kpi-val,.t td,output{font-variant-numeric:tabular-nums}
+button{font-family:inherit}
+:focus-visible{outline:2px solid var(--red-400);outline-offset:2px}
+[hidden]{display:none!important}
+svg.i{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* ---------- Header ---------- */
+.masthead{border-top:2px solid var(--red-600);background:linear-gradient(180deg,#0F0F11 0%,var(--bg) 100%);border-bottom:1px solid var(--border)}
+.mh-inner{max-width:1600px;margin:0 auto;padding:14px 28px;display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"brand tabs actions";align-items:center;gap:14px 28px}
+.brand{grid-area:brand;display:flex;align-items:center;gap:12px;min-width:0}
+.logo{width:36px;height:36px;flex:none}
+.brand-name{font-family:var(--f-head);font-weight:700;font-size:19px;letter-spacing:.01em;line-height:1.1}
+.brand h1{margin:2px 0 0;font:500 11.5px var(--f-body);color:var(--text-muted);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.tabs{grid-area:tabs;display:flex;gap:2px;justify-content:center;min-width:0}
+.tab{background:none;border:0;color:var(--text-muted);font:500 13.5px var(--f-body);padding:10px 14px;border-radius:10px;cursor:pointer;position:relative;white-space:nowrap;transition:color .15s,background .15s}
+.tab:hover{color:var(--text);background:var(--surface)}
+.tab[aria-selected="true"]{color:var(--text)}
+.tab[aria-selected="true"]::after{content:"";position:absolute;left:14px;right:14px;bottom:3px;height:2px;border-radius:2px;background:var(--red-500)}
+.tabs-mobile{grid-area:tabs;display:none}
+.actions{grid-area:actions;display:flex;align-items:center;gap:10px;justify-content:flex-end}
+.updated{font-size:11.5px;color:var(--text-muted);text-align:right;line-height:1.3;white-space:nowrap}
+.updated b{color:var(--text);font-weight:600;display:block}
+.btn{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:10px;border:1px solid var(--red-600);background:var(--red-700);color:var(--text);font:600 13px var(--f-body);cursor:pointer;white-space:nowrap;transition:background .15s,border-color .15s}
+.btn:hover{background:var(--red-600)}
+.btn-ghost{background:transparent;border-color:var(--border)}
+.btn-ghost:hover{background:var(--surface-2);border-color:#3A3A3F}
+
+/* ---------- Banner / toast / tooltip ---------- */
+.banner{max-width:1600px;margin:14px auto 0;padding:0 28px}
+.banner-in{display:flex;gap:12px;align-items:flex-start;background:linear-gradient(90deg,rgba(110,31,36,.35),rgba(20,20,22,.9));border:1px solid rgba(166,58,64,.5);border-radius:12px;padding:12px 14px;color:var(--text)}
+.banner-in .i{color:var(--red-300);margin-top:2px}
+.banner-in b{font-size:13px}
+.banner-in ul{margin:4px 0 0;padding-left:18px;font-size:12.5px;color:var(--red-200)}
+.banner-x{margin-left:auto;background:none;border:0;color:var(--text-muted);cursor:pointer;font-size:18px;line-height:1;padding:2px 6px;border-radius:6px}
+.banner-x:hover{color:var(--text);background:rgba(255,255,255,.06)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:120;background:var(--surface-2);border:1px solid var(--border);border-left:3px solid var(--red-500);border-radius:10px;padding:10px 16px;font-size:13px;box-shadow:0 16px 40px rgba(0,0,0,.55);max-width:calc(100vw - 32px)}
+#tip{position:fixed;z-index:130;max-width:300px;padding:10px 12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:12px;line-height:1.5;box-shadow:0 14px 34px rgba(0,0,0,.55);pointer-events:none}
+#tip b{display:block;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--red-300);margin-bottom:3px}
+#tip .dec{margin-top:9px;padding-top:9px;border-top:1px solid var(--border)}
+
+/* ---------- Filtros ---------- */
+.filterbar{position:sticky;top:0;z-index:40;background:rgba(11,11,12,.9);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.fb-inner{max-width:1600px;margin:0 auto;padding:10px 28px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;position:relative}
+.fb-main{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center}
+.dd{display:flex;align-items:center;gap:8px;min-width:0}
+.dd-label{font-size:10.5px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;font-weight:600;white-space:nowrap}
+.dd-ctl{position:relative;min-width:0}
+.dd-btn{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:150px;width:100%;height:34px;padding:0 10px 0 12px;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;color:var(--text);font:500 13px var(--f-body);cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.dd-btn:hover{border-color:#3A3A3F}
+.dd-val{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dd.is-set .dd-btn{border-color:var(--red-600);box-shadow:inset 0 0 0 1px rgba(166,58,64,.25)}
+.dd-caret{width:12px;height:12px;fill:none;stroke:var(--red-500);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s;flex:none}
+.dd.open .dd-caret{transform:rotate(180deg)}
+.dd-menu{position:absolute;top:calc(100% + 6px);left:0;min-width:100%;max-height:300px;overflow:auto;margin:0;padding:6px;list-style:none;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;box-shadow:0 18px 44px rgba(0,0,0,.6);z-index:70}
+.dd-menu.right{left:auto;right:0}
+.dd-menu li{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;font-size:13px;cursor:pointer;white-space:nowrap;color:var(--text)}
+.dd-menu li::before{content:"";width:6px;height:6px;border-radius:50%;background:transparent;flex:none}
+.dd-menu li[aria-selected="true"]{color:var(--red-200);font-weight:600}
+.dd-menu li[aria-selected="true"]::before{background:var(--red-500)}
+.dd-menu li:hover,.dd-menu li:focus{background:var(--red-700);color:var(--text);outline:none}
+.fb-more{position:relative}
+.btn-more{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 12px;background:transparent;border:1px solid var(--border);border-radius:9px;color:var(--text);font:500 13px var(--f-body);cursor:pointer}
+.btn-more:hover,.btn-more[aria-expanded="true"]{background:var(--surface-2);border-color:#3A3A3F}
+.btn-more .cnt{min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--red-600);font-size:11px;font-weight:700;display:inline-grid;place-items:center}
+.more-panel{position:absolute;top:calc(100% + 8px);left:0;z-index:60;width:440px;max-width:calc(100vw - 32px);background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;box-shadow:0 22px 54px rgba(0,0,0,.65)}
+.more-panel .dd{flex-direction:column;align-items:stretch;gap:5px}
+.more-panel .dd-btn{min-width:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 5px 0 10px;border-radius:999px;background:rgba(166,58,64,.14);border:1px solid rgba(166,58,64,.45);color:var(--red-200);font:500 12px var(--f-body);cursor:pointer}
+.chip:hover{background:rgba(166,58,64,.25)}
+.chip .x{width:17px;height:17px;border-radius:50%;display:grid;place-items:center;background:rgba(0,0,0,.3);font-size:12px;line-height:1}
+.btn-clear{margin-left:auto;background:none;border:0;color:var(--text-muted);font:500 12.5px var(--f-body);text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:4px}
+.btn-clear:hover{color:var(--text)}
+
+/* ---------- Páginas e grade ---------- */
+main{max-width:1600px;margin:0 auto;padding:22px 28px 36px}
+.page{display:none;animation:fade .35s ease}
+.page.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:2px 0 16px;flex-wrap:wrap}
+.page-head h2{font-family:var(--f-head);font-size:24px;font-weight:600;margin:0;letter-spacing:-.01em}
+.page-head p{margin:4px 0 0;color:var(--text-muted);font-size:13px}
+.page-tag{font-size:11.5px;color:var(--text-muted);border:1px solid var(--border);border-radius:999px;padding:4px 10px;white-space:nowrap}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px;grid-auto-flow:dense}
+.span-3{grid-column:span 3}.span-4{grid-column:span 4}.span-5{grid-column:span 5}.span-6{grid-column:span 6}.span-7{grid-column:span 7}.span-8{grid-column:span 8}.span-12{grid-column:span 12}
+.row-2{grid-row:span 2}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;min-width:0;transition:box-shadow .2s,border-color .2s;position:relative}
+.card:hover{box-shadow:0 0 0 1px rgba(166,58,64,.25)}
+.card-h{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:8px}
+.card-h h3{margin:0;font:600 14.5px var(--f-head);letter-spacing:.005em}
+.card-h p{margin:3px 0 0;color:var(--text-muted);font-size:12px}
+.nf{flex:none;font-size:10.5px;color:var(--text-muted);border:1px dashed #3A3A3F;border-radius:999px;padding:3px 9px;white-space:nowrap;max-width:55%;overflow:hidden;text-overflow:ellipsis}
+.chart{width:100%}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--text-muted);font-size:13px;text-align:center;border:1px dashed var(--border);border-radius:10px}
+.empty svg{width:28px;height:28px;stroke:var(--text-dim)}
+.legend-inline{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:6px;font-size:11.5px;color:var(--text-muted)}
+.legend-inline span{display:inline-flex;align-items:center;gap:6px}
+.legend-inline i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.legend-inline i.dash{height:0;width:16px;border-top:2px dashed var(--gray-300);border-radius:0}
+.legend-inline i.solid{height:0;width:16px;border-top:2px solid var(--gray-300);border-radius:0}
+.callout{display:flex;gap:10px;align-items:center;font-size:12.5px;padding:8px 12px;border-radius:9px;background:rgba(166,58,64,.1);border:1px solid rgba(166,58,64,.35);color:var(--red-200);margin-bottom:6px}
+.callout.ok{background:rgba(181,178,180,.08);border-color:rgba(181,178,180,.3);color:var(--gray-300)}
+
+/* ---------- KPIs ---------- */
+.kpis{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:12px;margin-bottom:16px}
+.kpis[data-n="12"]{--n:6}.kpis[data-n="6"]{--n:6}.kpis[data-n="5"]{--n:5}.kpis[data-n="4"]{--n:4}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px 13px 18px;position:relative;overflow:hidden;min-width:0;transition:box-shadow .2s}
+.kpi:hover{box-shadow:0 0 0 1px rgba(166,58,64,.25)}
+.kpi::before{content:"";position:absolute;left:0;top:16px;bottom:16px;width:2px;border-radius:2px;background:var(--red-600)}
+.kpi-top{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.kpi-sub{font-size:11px;color:var(--text-muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi-label{font-size:11px;color:#C9C6C8;font-weight:700;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi-val{font:600 25px/1.15 var(--f-head);margin:8px 0 6px;letter-spacing:-.015em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi-val.neg{color:var(--red-300)}
+.kpi-val.txt{font-size:20px}
+.kpi-ref{font-size:11.5px;color:var(--text-muted);display:flex;flex-wrap:wrap;gap:3px 8px;line-height:1.35}
+.kpi-ref strong{color:var(--text);font-weight:600}
+.tr{font-weight:600}
+.tr.bad{color:var(--red-300)}
+.tr.good{color:var(--gray-300)}
+.info{flex:none;width:18px;height:18px;border-radius:50%;border:1px solid #3A3A3F;background:transparent;color:var(--text-muted);font:700 10px/1 var(--f-head);cursor:help;display:grid;place-items:center;padding:0}
+.info:hover,.info:focus-visible{color:var(--text);border-color:var(--red-500)}
+
+/* ---------- Alertas ---------- */
+.alerts{display:grid;gap:10px}
+.alert{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;background:var(--surface-2);border:1px solid var(--border);border-left:3px solid var(--gray-500);border-radius:10px}
+.alert.high{border-left-color:var(--red-500)}
+.alert.mid{border-left-color:var(--red-300)}
+.al-ic{flex:none;width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:rgba(166,58,64,.14);color:var(--red-300)}
+.alert.info .al-ic{background:rgba(181,178,180,.1);color:var(--gray-300)}
+.al-sev{font-size:9.5px;font-weight:700;letter-spacing:.09em;color:var(--text-muted);text-transform:uppercase}
+.al-t{font-weight:600;font-size:13.5px;margin-top:1px}
+.al-s{font-size:12px;color:var(--text-muted);margin-top:2px}
+.al-a{font-size:12px;color:var(--text);margin-top:6px}
+.al-a::before{content:"→ ";color:var(--red-300);font-weight:700}
+
+/* ---------- Tabelas ---------- */
+.tbl-tools{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap}
+.search{display:flex;align-items:center;gap:8px;height:34px;padding:0 12px;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;color:var(--text-muted);width:min(320px,100%)}
+.search:focus-within{border-color:var(--red-600)}
+.search input{flex:1;min-width:0;background:none;border:0;color:var(--text);font:500 13px var(--f-body);outline:none}
+.tbl-count{font-size:12px;color:var(--text-muted)}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px;-webkit-overflow-scrolling:touch}
+table.t{width:100%;border-collapse:separate;border-spacing:0;font-size:12.5px}
+.t th{background:var(--surface-2);color:var(--text-muted);font-weight:600;text-align:left;padding:9px 12px;white-space:nowrap;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em}
+.t th button{all:unset;cursor:pointer;display:inline-flex;gap:4px;align-items:center}
+.t th button:focus-visible{outline:2px solid var(--red-400);outline-offset:2px;border-radius:3px}
+.t th .s{color:var(--red-400);font-size:9px}
+.t td{padding:9px 12px;border-top:1px solid var(--border);white-space:nowrap}
+.t .n{text-align:right}
+.t tbody tr{transition:background .12s}
+.t tbody tr:hover td{background:#19191C}
+.t tr.click{cursor:pointer}
+.t tr.click:focus-visible{outline:2px solid var(--red-400);outline-offset:-2px}
+.neg{color:var(--red-300)}
+.muted{color:var(--text-muted)}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600}
+.badge.ativo{background:rgba(181,178,180,.12);color:var(--gray-300);border:1px solid rgba(181,178,180,.3)}
+.badge.cancelado{background:rgba(166,58,64,.16);color:var(--red-300);border:1px solid rgba(166,58,64,.5)}
+.pager{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-top:10px;font-size:12px;color:var(--text-muted);flex-wrap:wrap}
+.pager button{min-width:30px;height:28px;border-radius:7px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);cursor:pointer;font:500 12px var(--f-body)}
+.pager button[aria-current="true"]{background:var(--red-700);border-color:var(--red-600)}
+.pager button:disabled{opacity:.4;cursor:default}
+.t.dre td:first-child,.t.dre th:first-child{position:sticky;left:0;z-index:1;background:var(--surface);border-right:1px solid var(--border)}
+.t.dre th:first-child{background:var(--surface-2)}
+.t.dre .proj{background:#18181B}
+.t.dre th.proj{background:#202024}
+.t.dre tr.tot td{font-weight:600;color:var(--text)}
+.t.dre tr.res td{font-weight:700;border-top:1px solid #3A3A3F}
+.t.dre tr.ded td:not(:first-child){color:var(--text-muted)}
+.t.dre .ph{display:block;font-size:9px;letter-spacing:.08em;color:var(--text-dim);margin-top:2px}
+.t.dre th.proj .ph{color:var(--red-300)}
+.mbar{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+.mbar .trk{width:70px;height:6px;border-radius:3px;background:rgba(255,255,255,.05);overflow:hidden;flex:none}
+.mbar .fil{height:100%;border-radius:3px}
+.rank{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:6px;background:var(--surface-2);font-size:11px;font-weight:700;color:var(--text-muted)}
+.rank.top{background:var(--red-700);color:var(--text)}
+
+/* ---------- Motivos de perda ---------- */
+.lossrow{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;margin-bottom:14px}
+.lossrow .lt{font-size:13px}
+.lossrow .lv{font:600 13px var(--f-head)}
+.lossrow .bar{grid-column:1/-1;height:8px;border-radius:4px;background:rgba(255,255,255,.05);overflow:hidden}
+.lossrow .bar i{display:block;height:100%;border-radius:4px;background:var(--red-500)}
+.loss-total{font-size:12px;color:var(--text-muted);margin:2px 0 16px}
+.loss-total b{font:600 26px var(--f-head);color:var(--text);display:block}
+
+/* ---------- Simulador ---------- */
+.sim{display:flex;flex-direction:column;gap:18px;padding-top:4px}
+.sim-field{display:flex;flex-direction:column;gap:8px}
+.sim-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.sim-top label{font-size:13px;color:var(--text);display:flex;gap:6px;align-items:center}
+.sim-top output{font:600 14px var(--f-head);color:var(--red-200)}
+.sim-range{display:flex;justify-content:space-between;font-size:10.5px;color:var(--text-muted)}
+.sim-note{font-size:11.5px;color:var(--text-muted);line-height:1.5;border-top:1px solid var(--border);padding-top:12px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:6px;margin:6px 0;background:linear-gradient(to right,var(--red-500) 0,var(--red-600) var(--p,50%),var(--border) var(--p,50%));outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;background:var(--text);border:3px solid var(--red-600);box-shadow:0 0 0 4px rgba(166,58,64,.2);transition:transform .15s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.12)}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--text);border:3px solid var(--red-600);box-shadow:0 0 0 4px rgba(166,58,64,.2)}
+input[type=range]:focus-visible{outline:2px solid var(--red-400);outline-offset:6px}
+
+/* ---------- Rodapé ---------- */
+footer{border-top:1px solid var(--border)}
+.ft-in{max-width:1600px;margin:0 auto;padding:20px 28px 28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;color:var(--text-muted);font-size:12px}
+.ft-in b{color:var(--text);font-family:var(--f-head);font-weight:600}
+.ft-note{display:inline-flex;align-items:center;gap:8px}
+
+/* ---------- Notas fiscais ---------- */
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.nf-tools-l,.nf-tools-r{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:9px;overflow:hidden;background:var(--surface-2)}
+.seg button{background:none;border:0;color:var(--text-muted);font:500 12.5px var(--f-body);padding:0 12px;height:32px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--red-700);color:var(--text)}
+.badge.nf-in{background:rgba(166,58,64,.14);color:var(--red-200);border:1px solid rgba(166,58,64,.45)}
+.badge.nf-out{background:rgba(181,178,180,.1);color:var(--gray-300);border:1px solid rgba(181,178,180,.3)}
+.nf-doc{font-size:11px;margin-top:2px}
+.nf-desc{max-width:260px;overflow:hidden;text-overflow:ellipsis}
+.t tr.nf-canc td{opacity:.55}
+.t tr.nf-canc td:nth-child(7){text-decoration:line-through}
+.icon-btn{width:30px;height:30px;display:grid;place-items:center;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-muted);cursor:pointer}
+.icon-btn:hover{color:var(--red-300);border-color:var(--red-600)}
+.nf-foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.nf-note{font-size:11.5px;color:var(--text-muted)}
+.nf-dlg{width:min(760px,calc(100vw - 32px));max-height:calc(100vh - 32px);padding:0;border:1px solid var(--border);border-radius:16px;background:var(--surface);color:var(--text);box-shadow:0 30px 80px rgba(0,0,0,.7)}
+.nf-dlg::backdrop{background:rgba(5,5,6,.72);backdrop-filter:blur(3px)}
+.nf-dlg form{padding:20px 22px}
+.nf-dlg-h{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:16px}
+.nf-dlg-h h3{margin:0;font:600 18px var(--f-head)}
+.nf-dlg-h p{margin:4px 0 0;color:var(--text-muted);font-size:12.5px}
+.nf-xml{position:relative;overflow:hidden;cursor:pointer;flex:none}
+.nf-xml input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.nf-xml:focus-within{outline:2px solid var(--red-400);outline-offset:2px}
+.nf-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 14px}
+.nf-grid label{display:flex;flex-direction:column;gap:5px;font-size:11.5px;color:var(--text-muted);font-weight:600;min-width:0}
+.nf-grid label.w2{grid-column:span 2}
+.nf-grid input,.nf-grid select{height:36px;padding:0 10px;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;color:var(--text);font:500 13px var(--f-body);width:100%;color-scheme:dark}
+.nf-grid input:focus,.nf-grid select:focus{outline:none;border-color:var(--red-500);box-shadow:0 0 0 3px rgba(166,58,64,.2)}
+.nf-msg{min-height:18px;margin:12px 0 0;font-size:12.5px}
+.nf-msg.ok{color:var(--gray-300)}.nf-msg.bad{color:var(--red-300)}
+.nf-dlg-f{display:flex;justify-content:flex-end;gap:10px;margin-top:14px}
+@media (max-width:759px){
+  .nf-grid{grid-template-columns:1fr 1fr}
+  .nf-dlg-h{flex-direction:column}
+  .nf-tools-r{width:100%}.nf-tools-r .btn{flex:1;justify-content:center}
+}
+@media (max-width:419px){ .nf-grid{grid-template-columns:1fr} .nf-grid label.w2{grid-column:auto} }
+
+/* ---------- Responsivo ---------- */
+@media (max-width:1439px){
+  .mh-inner{grid-template-columns:1fr auto;grid-template-areas:"brand actions" "tabs tabs"}
+  .tabs{justify-content:flex-start;overflow-x:auto;scrollbar-width:none;border-top:1px solid var(--border);padding-top:8px;margin:0 -6px}
+  .kpis[data-n="12"]{--n:4}
+}
+@media (max-width:1199px){
+  .span-3,.span-4,.span-5,.span-6{grid-column:span 6}
+  .span-7,.span-8{grid-column:span 12}
+  .row-2{grid-row:auto}
+  .kpis[data-n="6"]{--n:3}
+}
+@media (max-width:899px){
+  .kpis[data-n]{--n:3}
+  .span-3,.span-4,.span-5,.span-6{grid-column:span 12}
+}
+@media (max-width:759px){
+  .mh-inner{padding:12px 16px;gap:10px 12px}
+  .tabs{display:none}
+  .tabs-mobile{display:block}
+  .tabs-mobile .dd{flex-direction:row}
+  .tabs-mobile .dd-ctl{flex:1}
+  .updated{display:none}
+  .actions .lbl{display:none}
+  .btn{padding:0 11px}
+  .brand h1{font-size:10.5px}
+  main{padding:16px 16px 28px}
+  .fb-inner{padding:10px 16px;gap:10px}
+  .filterbar{position:static}
+  .fb-main{display:grid;grid-template-columns:1fr 1fr;width:100%}
+  .fb-main .dd,.more-panel .dd{flex-direction:column;align-items:stretch;gap:4px}
+  .dd-btn{min-width:0}
+  .fb-more{position:static}
+  .more-panel{left:16px;right:16px;width:auto;grid-template-columns:1fr}
+  .btn-clear{margin-left:0}
+  .banner{padding:0 16px}
+  .kpis[data-n]{--n:2}
+  .kpi{padding:12px 12px 11px 14px}
+  .kpi-val{font-size:20px}
+  .kpi-val.txt{font-size:16px}
+  .card{padding:14px}
+  .page-head h2{font-size:20px}
+  .ft-in{padding:18px 16px 24px}
+}
+
+@media (max-width:419px){
+  .brand h1{white-space:normal;line-height:1.3}
+  .actions{gap:6px}
+}
+@media (max-width:359px){
+  .kpis[data-n]{--n:1}
+}
+
+/* ---------- Impressão / PDF ---------- */
+@media print{
+  @page{size:A4 landscape;margin:8mm}
+  html,body{background:#0B0B0C!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .filterbar,.actions,.tabs,.tabs-mobile,.banner,#tip,.toast,.tbl-tools,.pager,.btn-clear{display:none!important}
+  .mh-inner{grid-template-columns:1fr;grid-template-areas:"brand"}
+  main{max-width:none;padding:10px 0}
+  .page{display:block!important;break-after:page;animation:none}
+  .page:last-of-type{break-after:auto}
+  .card,.kpi,.alert{break-inside:avoid}
+  .card:hover,.kpi:hover{box-shadow:none}
+}
+body.printing main{max-width:1060px}
+body.printing .page{display:block}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="ic-upload" viewBox="0 0 24 24"><path d="M12 15V4M7 9l5-5 5 5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></symbol>
+    <symbol id="ic-print" viewBox="0 0 24 24"><path d="M7 9V3h10v6M7 18H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M7 14h10v7H7z"/></symbol>
+    <symbol id="ic-alert" viewBox="0 0 24 24"><path d="M12 3 2 20h20L12 3zM12 10v4M12 17.5v.01"/></symbol>
+    <symbol id="ic-down" viewBox="0 0 24 24"><path d="M3 7l6 6 4-4 8 8M21 11v6h-6"/></symbol>
+    <symbol id="ic-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
+    <symbol id="ic-users" viewBox="0 0 24 24"><path d="M16 20v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 20v-1a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    <symbol id="ic-wallet" viewBox="0 0 24 24"><path d="M20 7H5a2 2 0 0 1 0-4h13v4M3 5v14a2 2 0 0 0 2 2h15V7M16 14h.01"/></symbol>
+    <symbol id="ic-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="ic-scale" viewBox="0 0 24 24"><path d="M12 3v18M5 7h14M5 7l-3 7a4 4 0 0 0 6 0L5 7zM19 7l-3 7a4 4 0 0 0 6 0l-3-7M8 21h8"/></symbol>
+    <symbol id="ic-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+    <symbol id="ic-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+    <symbol id="ic-empty" viewBox="0 0 24 24"><path d="M3 3v18h18M7 15l3-3 3 3 5-6"/><path d="M4 4l16 16" stroke-dasharray="2 2"/></symbol>
+    <symbol id="ic-download" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M4 19h16"/></symbol>
+    <symbol id="ic-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="ic-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></symbol>
+    <symbol id="ic-file" viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6zM14 3v6h6M9 14l2 2 4-4"/></symbol>
+    <symbol id="ic-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+  </defs>
+</svg>
+
+<header class="masthead">
+  <div class="mh-inner">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#6E1F24"/><rect x="8" y="17" width="4.2" height="8" rx="1.6" fill="#D48A8D"/><rect x="13.9" y="12" width="4.2" height="13" rx="1.6" fill="#E6BDBE"/><rect x="19.8" y="7" width="4.2" height="18" rx="1.6" fill="#F2F0EE"/></svg>
+      <div><div class="brand-name">Datalyse</div><h1>Gestão Executiva · Academia</h1></div>
+    </div>
+    <nav class="tabs" id="tabs" role="tablist" aria-label="Páginas do painel"></nav>
+    <div class="tabs-mobile" id="tabsMobile"></div>
+    <div class="actions">
+      <div class="updated" id="updated" aria-live="polite"></div>
+      <button class="btn" id="btnUpload" type="button" title="Carregar uma versão atualizada da planilha"><svg class="i"><use href="#ic-upload"/></svg><span class="lbl">Carregar planilha</span></button>
+      <input type="file" id="fileInput" accept=".xlsx,.xlsm,.xls" hidden>
+      <button class="btn btn-ghost" id="btnPdf" type="button" title="Exportar em PDF"><svg class="i"><use href="#ic-print"/></svg><span class="lbl">Exportar PDF</span></button>
+    </div>
+  </div>
+</header>
+
+<div class="filterbar" id="filterbar">
+  <div class="fb-inner">
+    <div class="fb-main" id="fbMain"></div>
+    <div class="fb-more">
+      <button class="btn-more" id="btnMore" type="button" aria-expanded="false" aria-controls="morePanel">Mais filtros <span class="cnt" id="moreCnt" hidden></span><svg class="dd-caret" viewBox="0 0 12 12"><path d="M3 4.5l3 3 3-3"/></svg></button>
+      <div class="more-panel" id="morePanel" hidden></div>
+    </div>
+    <div class="chips" id="chips" aria-live="polite"></div>
+    <button class="btn-clear" id="btnClear" type="button" hidden>Limpar filtros</button>
+  </div>
+</div>
+
+<div class="banner" id="banner" hidden>
+  <div class="banner-in" role="alert"><svg class="i"><use href="#ic-alert"/></svg><div><b id="bannerTitle">Atenção aos dados da planilha</b><ul id="bannerList"></ul></div><button class="banner-x" id="bannerX" type="button" aria-label="Fechar aviso">×</button></div>
+</div>
+
+<main id="main"></main>
+
+<footer>
+  <div class="ft-in">
+    <span>Desenvolvido por <b>Datalyse</b> · Inteligência de Dados</span>
+    <span class="ft-note">Indicadores recalculados pela Datalyse <button class="info" type="button" id="ftInfo" aria-label="Correções aplicadas">i</button></span>
+  </div>
+</footer>
+<div id="tip" role="tooltip" hidden></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<dialog class="nf-dlg" id="nfDialog" aria-labelledby="nfDlgTitle">
+  <form id="nfForm" novalidate>
+    <div class="nf-dlg-h">
+      <div><h3 id="nfDlgTitle">Adicionar nota fiscal</h3><p>Importe o XML da NF-e/NFS-e ou preencha manualmente.</p></div>
+      <label class="btn btn-ghost nf-xml"><svg class="i"><use href="#ic-file"/></svg><span>Importar XML</span><input type="file" id="nfXml" accept=".xml,text/xml,application/xml"></label>
+    </div>
+    <div class="nf-grid">
+      <label>Tipo<select name="tipo"><option value="Entrada">Entrada (compra)</option><option value="Saída">Saída (emitida)</option></select></label>
+      <label>Data de emissão<input type="date" name="data" required></label>
+      <label>Número<input name="numero" inputmode="numeric" autocomplete="off" required></label>
+      <label>Série<input name="serie" autocomplete="off" placeholder="1, A1, NFS-e…"></label>
+      <label class="w2">Emitente / destinatário<input name="parceiro" autocomplete="off" required placeholder="Fornecedor ou cliente"></label>
+      <label>CNPJ / CPF<input name="doc" inputmode="numeric" autocomplete="off"></label>
+      <label>Categoria<input name="categoria" list="nfCats" autocomplete="off" placeholder="Energia, Manutenção…"><datalist id="nfCats"></datalist></label>
+      <label class="w2">Descrição<input name="descricao" autocomplete="off" placeholder="Produto ou serviço"></label>
+      <label>Valor total (R$)<input name="valor" type="number" min="0" step="0.01" inputmode="decimal" required></label>
+      <label>Status<select name="status"><option>Válida</option><option>Cancelada</option></select></label>
+      <label class="w2">Chave de acesso <span class="muted">(44 dígitos, opcional)</span><input name="chave" inputmode="numeric" autocomplete="off" maxlength="60"></label>
+    </div>
+    <p class="nf-msg" id="nfMsg" role="status"></p>
+    <div class="nf-dlg-f"><button class="btn btn-ghost" type="button" id="nfCancel">Cancelar</button><button class="btn" type="submit">Salvar nota</button></div>
+  </form>
+</dialog>
+
+<script>
+'use strict';
+/* =====================================================================
+   CONFIG / TEMA
+   ===================================================================== */
+const EMBEDDED = /*__EMBEDDED_DATA__*/null;
+const C = {bg:'#0B0B0C',surface:'#141416',surface2:'#1C1C1F',border:'#2A2A2E',text:'#F2F0EE',muted:'#9A979A',dim:'#5E5B5F',
+  r700:'#6E1F24',r600:'#8E2A30',r500:'#A63A40',r400:'#C0595E',r300:'#D48A8D',r200:'#E6BDBE',g500:'#6B686C',g300:'#B5B2B4',grid:'#222225'};
+const PALETTE = [C.r500, C.r300, C.r700, C.g300, C.r400, C.g500];
+const STATUS_COLOR = {'Alta':C.r500,'Média':C.r300,'Baixa':C.g500,'Sem turma':C.border};
+const MES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const DAY_KEYS = ['seg','ter','qua','qui','sex','sab','dom'];
+const DAY_LABELS = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+const LS_KEY = 'datalyse.academia.v2';
+const REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+let ANIM = !REDUCED;
+
+const PAGES = [
+  {id:'overview', label:'Visão Geral'},
+  {id:'finance', label:'Financeiro'},
+  {id:'nf', label:'Notas fiscais'},
+  {id:'students', label:'Alunos & Retenção'},
+  {id:'sales', label:'Comercial'},
+  {id:'ops', label:'Operação'},
+  {id:'proj', label:'Projeções'},
+];
+
+/* Formatação pt-BR */
+const nf0 = new Intl.NumberFormat('pt-BR',{maximumFractionDigits:0});
+const nf1 = new Intl.NumberFormat('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1});
+const nfB2 = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
+const nfB0 = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0});
+const nfC = new Intl.NumberFormat('pt-BR',{notation:'compact',maximumFractionDigits:1});
+const F = {
+  brl: v => nfB2.format(v||0),
+  brl0: v => nfB0.format(Math.round(v||0)),
+  money: v => Math.abs(v||0) >= 10000 ? F.brl0(v) : F.brl(v),
+  brlc: v => (v<0?'−':'') + 'R$ ' + (Math.abs(v)<1000 ? nf0.format(Math.abs(v)) : nfC.format(Math.abs(v))),
+  pct: v => nf1.format((v||0)*100) + '%',
+  pct0: v => nf0.format((v||0)*100) + '%',
+  int: v => nf0.format(v||0),
+  dec: v => nf1.format(v||0),
+  x: v => nf1.format(v||0) + 'x',
+  date: d => d ? `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}` : '—',
+};
+function pad(n){ return String(n).padStart(2,'0'); }
+function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function norm(s){ return String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim().replace(/\s+/g,' '); }
+function str(v){ return v == null ? '' : String(v).trim(); }
+function sum(a, k){ return a.reduce((s,x) => s + (typeof k === 'function' ? k(x) : (x[k]||0)), 0); }
+function avg(a){ return a.length ? a.reduce((s,x)=>s+x,0)/a.length : 0; }
+function groupSum(arr, keyFn, valFn){ const m = new Map(); for(const x of arr){ const k = keyFn(x); m.set(k, (m.get(k)||0) + (valFn ? valFn(x) : 1)); } return [...m].map(([name,value]) => ({name,value})); }
+function uniq(a){ return [...new Set(a.filter(v => v != null && v !== ''))]; }
+const mkey = d => d ? `${d.getFullYear()}-${pad(d.getMonth()+1)}` : null;
+const mlabel = k => { if(!k) return '—'; const [y,m] = k.split('-'); return `${MES[+m-1]}/${y.slice(2)}`; };
+const addMonths = (k, n) => { const [y,m] = k.split('-').map(Number); return mkey(new Date(y, m-1+n, 1)); };
+/* Variação contra o mês anterior (só aparece quando há base no mês anterior) */
+function momTrend(cur, prev, fmtDelta){ if (!(prev > 0)) return null; const d = cur - prev; if (Math.abs(d) < 1e-9) return null; return {up: d > 0, bad: d < 0, t: `${fmtDelta(d, prev)} vs mês anterior`}; }
+const icon = id => `<svg class="i"><use href="#ic-${id}"/></svg>`;
+
+/* Tema único ECharts */
+if (window.echarts) {
+  echarts.registerTheme('datalyse', {
+    color: PALETTE,
+    backgroundColor: 'transparent',
+    textStyle: {fontFamily: 'Inter, system-ui, sans-serif', color: C.muted},
+    legend: {textStyle: {color: C.muted, fontSize: 11}, icon: 'roundRect', itemWidth: 10, itemHeight: 10, itemGap: 14, pageTextStyle:{color:C.muted}, pageIconColor:C.r400, pageIconInactiveColor:C.dim},
+    tooltip: {backgroundColor: C.surface2, borderColor: C.border, borderWidth: 1, padding: [9,12], textStyle: {color: C.text, fontSize: 12}, extraCssText: 'border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,.5);'},
+    categoryAxis: {axisLine: {show: false}, axisTick: {show: false}, axisLabel: {color: C.muted, fontSize: 11}, splitLine: {show: false}},
+    valueAxis: {axisLine: {show: false}, axisTick: {show: false}, axisLabel: {color: C.muted, fontSize: 11}, splitLine: {lineStyle: {color: C.grid}}, nameTextStyle:{color:C.muted,fontSize:11}},
+    line: {symbol: 'circle', symbolSize: 7, lineStyle: {width: 2}},
+    bar: {itemStyle: {borderRadius: [4,4,0,0]}},
+    pie: {itemStyle: {borderColor: C.surface, borderWidth: 2}},
+    animationDuration: 700, animationEasing: 'cubicOut',
+  });
+}
+
+/* =====================================================================
+   LEITURA DE DADOS — lê as abas brutas por nome de coluna
+   ===================================================================== */
+const SPEC = {
+  Premissas: {param:{a:['parametro'],req:1}, valor:{a:['valor'],req:1}},
+  Alunos: {id:{a:['id']}, nome:{a:['nome'],req:1}, modalidade:{a:['modalidade'],req:1}, plano:{a:['plano']}, matricula:{a:['data matricula','matricula'],req:1}, mensalidade:{a:['mensalidade'],req:1}, status:{a:['status'],req:1}, cancelamento:{a:['data cancelamento','cancelamento']}, origem:{a:['origem']}},
+  Turmas: {codigo:{a:['codigo','turma'],req:1}, modalidade:{a:['modalidade'],req:1}, dia:{a:['dia','dias'],req:1}, horario:{a:['horario'],req:1}, professor:{a:['professor'],req:1}, capacidade:{a:['capacidade'],req:1}, matriculados:{a:['matriculados'],req:1}, presenca:{a:['presenca media','presenca'],req:1}, custo:{a:['custo mensal','custo'],req:1}},
+  Receitas: {data:{a:['data'],req:1}, idAluno:{a:['id aluno']}, cliente:{a:['cliente']}, modalidade:{a:['modalidade']}, tipo:{a:['tipo']}, previsto:{a:['valor previsto'],req:1}, recebido:{a:['valor recebido'],req:1}, forma:{a:['forma pagamento','forma de pagamento']}, status:{a:['status']}, mes:{a:['mes']}},
+  Despesas: {data:{a:['data'],req:1}, categoria:{a:['categoria'],req:1}, descricao:{a:['descricao']}, tipo:{a:['fixa/variavel','fixa / variavel','fixa ou variavel','tipo'],req:1}, centro:{a:['centro custo','centro de custo'],req:1}, valor:{a:['valor'],req:1}, pago:{a:['pago?','pago']}, mes:{a:['mes']}},
+  Leads: {data:{a:['data'],req:1}, nome:{a:['nome']}, origem:{a:['origem'],req:1}, interesse:{a:['interesse'],req:1}, experimental:{a:['experimental'],req:1}, compareceu:{a:['compareceu'],req:1}, matriculou:{a:['matriculou'],req:1}, valorPlano:{a:['valor plano']}, cac:{a:['cac']}, status:{a:['status']}},
+  Churn_Cancelamentos: {mes:{a:['mes']}, base:{a:['base inicial'],req:1}, novos:{a:['novos alunos','novos'],req:1}, cancel:{a:['cancelamentos'],req:1}},
+  Ocupacao_Horarios: {horario:{a:['horario'],req:1}, capacidade:{a:['capacidade'],req:1}, matriculados:{a:['matriculados'],req:1}, presenca:{a:['presenca media','presenca'],req:1}},
+  NotasFiscais: {data:{a:['data emissao','data de emissao','emissao','data'],req:1}, numero:{a:['numero','n']}, serie:{a:['serie']}, tipo:{a:['tipo']}, parceiro:{a:['emitente/destinatario','emitente / destinatario','emitente','fornecedor','destinatario','parceiro','cliente']}, doc:{a:['cnpj/cpf','cnpj','cpf']}, descricao:{a:['descricao']}, categoria:{a:['categoria']}, valor:{a:['valor total','valor'],req:1}, status:{a:['status','situacao']}, chave:{a:['chave de acesso','chave']}, mes:{a:['mes']}},
+};
+/* Colunas da aba NotasFiscais (opcional) — mesma ordem usada ao exportar a planilha */
+const NF_COLS = ['Data Emissão','Número','Série','Tipo','Emitente/Destinatário','CNPJ/CPF','Descrição','Categoria','Valor','Status','Chave de Acesso','Mês'];
+const NF_LS = 'datalyse.academia.notas.v1';
+const PREM_DEFAULT = {mensMusc:150, mensLutas:190, mensBale:140, taxaReceb:.97, churn:.05, cac:100, margem:.65, cresc:.03, custoFixo:18000, meta:300, dias:26};
+const PREM_RULES = [
+  ['mensMusc', s => s.includes('mensalidade') && s.includes('muscula')],
+  ['mensLutas', s => s.includes('mensalidade') && s.includes('luta')],
+  ['mensBale', s => s.includes('mensalidade') && s.includes('bale')],
+  ['taxaReceb', s => s.includes('recebimento')],
+  ['churn', s => s.includes('churn')],
+  ['cac', s => /\bcac\b/.test(s)],
+  ['margem', s => s.includes('margem')],
+  ['cresc', s => s.includes('crescimento')],
+  ['custoFixo', s => s.includes('custo') && s.includes('fixo')],
+  ['meta', s => s.includes('meta')],
+  ['dias', s => s.includes('dias')],
+];
+const PCT_KEYS = ['taxaReceb','churn','margem','cresc'];
+const PREM_NAMES = {mensMusc:'Mensalidade média musculação', mensLutas:'Mensalidade média lutas', mensBale:'Mensalidade média balé', taxaReceb:'Taxa média de recebimento', churn:'Churn mensal estimado', cac:'CAC estimado', margem:'Margem de contribuição média', cresc:'Crescimento mensal projetado', custoFixo:'Custos fixos mensais', meta:'Meta de alunos ativos', dias:'Dias de funcionamento/mês'};
+
+function num(v){
+  if (v == null || v === '') return 0;
+  if (typeof v === 'number') return isFinite(v) ? v : 0;
+  let s = String(v).replace(/[R$\s% ]/g,'');
+  if (s.includes(',')) s = s.replace(/\./g,'').replace(',','.');
+  const n = parseFloat(s); return isFinite(n) ? n : 0;
+}
+function yes(v){ return ['sim','s','yes','y','1','true','x','ok'].includes(norm(v)); }
+function parseDate(v){
+  if (v == null || v === '') return null;
+  if (v instanceof Date) return isNaN(v) ? null : new Date(v.getFullYear(), v.getMonth(), v.getDate());
+  if (typeof v === 'number'){ if (v < 1000) return null; const u = new Date(Math.round((v - 25569) * 86400000)); return new Date(u.getUTCFullYear(), u.getUTCMonth(), u.getUTCDate()); }
+  const s = String(v).trim(); let m;
+  if ((m = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/))){ let y = +m[3]; if (y < 100) y += 2000; return new Date(y, +m[2]-1, +m[1]); }
+  if ((m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/))) return new Date(+m[1], +m[2]-1, +m[3]);
+  if (/^\d{5}(\.\d+)?$/.test(s)) return parseDate(+s);
+  return null;
+}
+function parseMes(v){
+  if (v == null || v === '') return null;
+  if (typeof v === 'string'){
+    const s = v.trim(); let m;
+    if ((m = s.match(/^(\d{1,2})[\/\-](\d{4})$/))) return `${m[2]}-${pad(+m[1])}`;
+    if ((m = s.match(/^(\d{4})[\/\-](\d{1,2})$/))) return `${m[1]}-${pad(+m[2])}`;
+    if ((m = norm(s).match(/^([a-z]{3})[a-z]*[\/\- ]*(\d{2,4})$/))){ const i = MES.map(norm).indexOf(m[1]); if (i >= 0){ let y = +m[2]; if (y < 100) y += 2000; return `${y}-${pad(i+1)}`; } }
+  }
+  const d = parseDate(v); return d ? mkey(d) : null;
+}
+function getSheet(book, name){ const k = Object.keys(book).find(s => norm(s).replace(/[\s_]/g,'') === norm(name).replace(/[\s_]/g,'')); return k ? book[k] : null; }
+function readTable(book, name, warn){
+  const spec = SPEC[name], rows = getSheet(book, name);
+  if (!rows){ warn.push(`Aba “${name}” não encontrada — as seções que dependem dela ficarão vazias.`); return []; }
+  const h = rows.findIndex(r => r && r.filter(v => v != null && String(v).trim() !== '').length >= 2);
+  if (h < 0){ warn.push(`Aba “${name}” está vazia.`); return []; }
+  const header = rows[h].map(norm), idx = {}, missing = [];
+  for (const [key, def] of Object.entries(spec)){
+    let i = header.findIndex(x => def.a.includes(x));
+    if (i < 0) i = header.findIndex(x => def.a.some(a => x.startsWith(a)));
+    idx[key] = i; if (i < 0 && def.req) missing.push(def.a[0]);
+  }
+  if (missing.length) warn.push(`Aba “${name}”: coluna(s) não encontrada(s) — ${missing.join(', ')}.`);
+  const out = [];
+  for (let r = h+1; r < rows.length; r++){
+    const row = rows[r];
+    if (!row || row.every(v => v == null || String(v).trim() === '')) continue;
+    const o = {}; for (const k in idx) o[k] = idx[k] >= 0 ? row[idx[k]] : null; out.push(o);
+  }
+  return out;
+}
+function statusAluno(v){ const n = norm(v); if (n.startsWith('ativ')) return 'Ativo'; if (n.startsWith('cancel') || n.startsWith('inativ')) return 'Cancelado'; return str(v) || '—'; }
+function parseFaixa(s){
+  const n = norm(s); let m;
+  if ((m = n.match(/(\d{1,2})\s*(?:h|:\d\d)?\s*(?:-|–|a|ate|as)\s*(\d{1,2})/))) return [+m[1], +m[2]];
+  if ((m = n.match(/(\d{1,2})/))) return [+m[1], +m[1]+1];
+  return null;
+}
+function expandDays(s){
+  const n = norm(s).replace(/–/g,'-'); let m;
+  if ((m = n.match(/^([a-z]{3})[a-z]*\.?\s*(?:-|a|ate)\s*([a-z]{3})/))){
+    const a = DAY_KEYS.indexOf(m[1]), b = DAY_KEYS.indexOf(m[2]);
+    if (a >= 0 && b >= a) return DAY_KEYS.slice(a, b+1).map((_,i) => a+i);
+  }
+  return uniq(n.split(/[,\/;e ]+/).map(t => DAY_KEYS.indexOf(t.slice(0,3))).filter(i => i >= 0));
+}
+
+function loadBook(book){
+  const warn = [];
+  /* Premissas — lidas pelo nome do parâmetro, não pela linha */
+  const prem = {...PREM_DEFAULT}, found = new Set();
+  for (const r of readTable(book, 'Premissas', warn)){
+    const p = norm(r.param); const rule = PREM_RULES.find(([k, fn]) => !found.has(k) && fn(p));
+    if (!rule) continue; let v = num(r.valor);
+    if (PCT_KEYS.includes(rule[0]) && v > 1) v = v/100;
+    prem[rule[0]] = v; found.add(rule[0]);
+  }
+  const miss = Object.keys(PREM_DEFAULT).filter(k => !found.has(k));
+  if (miss.length && getSheet(book,'Premissas')) warn.push(`Premissas não encontradas (usando valor padrão): ${miss.map(k => PREM_NAMES[k]).join(', ')}.`);
+  const mensDe = mod => { const n = norm(mod); return n.includes('muscula') ? prem.mensMusc : n.includes('bale') ? prem.mensBale : prem.mensLutas; };
+
+  const alunos = readTable(book, 'Alunos', warn).map((r, i) => {
+    const matricula = parseDate(r.matricula);
+    return {id: r.id ?? i+1, nome: str(r.nome) || `Aluno ${i+1}`, modalidade: str(r.modalidade) || '—', plano: str(r.plano) || '—', matricula, mk: mkey(matricula), mensalidade: num(r.mensalidade), status: statusAluno(r.status), cancelamento: parseDate(r.cancelamento), origem: str(r.origem) || '—'};
+  });
+  const turmas = readTable(book, 'Turmas', warn).map(r => {
+    const cap = num(r.capacidade), mat = num(r.matriculados), custo = num(r.custo), modalidade = str(r.modalidade) || '—';
+    const ocup = cap > 0 ? mat/cap : null, mens = mensDe(modalidade), rec = mat * mens;
+    return {codigo: str(r.codigo), modalidade, dia: str(r.dia), horario: str(r.horario), professor: str(r.professor) || '—', capacidade: cap, matriculados: mat, presenca: num(r.presenca), custo, ocup, mens, recPot: rec, margem: rec - custo, margemPct: rec > 0 ? (rec - custo)/rec : null,
+      status: ocup == null ? 'Sem turma' : ocup >= .8 ? 'Alta' : ocup >= .5 ? 'Média' : 'Baixa', days: expandDays(r.dia), hour: (parseFaixa(r.horario) || [null])[0]};
+  });
+  const receitas = readTable(book, 'Receitas', warn).map(r => {
+    const data = parseDate(r.data);
+    return {data, mes: parseMes(r.mes) || mkey(data), modalidade: str(r.modalidade) || '—', tipo: str(r.tipo) || '—', cliente: str(r.cliente), previsto: num(r.previsto), recebido: num(r.recebido), forma: str(r.forma) || '—', status: str(r.status)};
+  });
+  const despesas = readTable(book, 'Despesas', warn).map(r => {
+    const data = parseDate(r.data);
+    return {data, mes: parseMes(r.mes) || mkey(data), categoria: str(r.categoria) || 'Outros', descricao: str(r.descricao), tipo: norm(r.tipo).startsWith('fix') ? 'Fixa' : 'Variável', centro: str(r.centro) || '—', valor: num(r.valor), pago: yes(r.pago)};
+  });
+  const leads = readTable(book, 'Leads', warn).map(r => {
+    const data = parseDate(r.data), experimental = yes(r.experimental), compareceu = yes(r.compareceu), matriculou = yes(r.matriculou);
+    let status = str(r.status); if (!status) status = matriculou ? 'Matriculado' : !compareceu ? 'Sem comparecimento' : 'Não convertido';
+    return {data, mk: mkey(data), nome: str(r.nome), origem: str(r.origem) || '—', interesse: str(r.interesse) || '—', experimental, compareceu, matriculou, valorPlano: num(r.valorPlano), cac: num(r.cac), status};
+  });
+  const churnRows = readTable(book, 'Churn_Cancelamentos', warn).map(r => ({base: r.base, novos: num(r.novos), cancel: num(r.cancel)}));
+  const ocupacao = readTable(book, 'Ocupacao_Horarios', warn).map(r => {
+    const cap = num(r.capacidade), mat = num(r.matriculados), ocup = cap > 0 ? mat/cap : null;
+    return {horario: str(r.horario), faixa: parseFaixa(r.horario), capacidade: cap, matriculados: mat, presenca: num(r.presenca), ocup, status: ocup == null ? 'Sem turma' : ocup >= .8 ? 'Alta' : ocup >= .5 ? 'Média' : 'Baixa'};
+  });
+  /* Notas fiscais: aba opcional (não gera aviso quando ausente) + notas adicionadas neste navegador */
+  const notasPlanilha = getSheet(book, 'NotasFiscais') ? readTable(book, 'NotasFiscais', warn).map(r => nfNormalizar({
+    data: parseDate(r.data), mes: parseMes(r.mes), numero: str(r.numero), serie: str(r.serie), tipo: str(r.tipo), parceiro: str(r.parceiro),
+    doc: str(r.doc), descricao: str(r.descricao), categoria: str(r.categoria), valor: num(r.valor), status: str(r.status), chave: str(r.chave).replace(/\D/g, '')}, 'planilha')) : [];
+  const notas = nfMesclar(notasPlanilha, nfLocais());
+  return {data: {prem, alunos, turmas, receitas, despesas, leads, churnRows, ocupacao, notas}, warn};
+}
+
+/* ---------- Notas fiscais: normalização, armazenamento local e XML ---------- */
+let nfSeq = 0;
+function nfNormalizar(n, origem){
+  const data = n.data instanceof Date ? n.data : parseDate(n.data);
+  return {id: n.id || `${origem}-${Date.now().toString(36)}-${++nfSeq}`, origem, data, mes: n.mes || mkey(data),
+    numero: str(n.numero), serie: str(n.serie), tipo: norm(n.tipo).startsWith('sai') ? 'Saída' : 'Entrada',
+    parceiro: str(n.parceiro) || '—', doc: str(n.doc), descricao: str(n.descricao), categoria: str(n.categoria) || 'Outros',
+    valor: num(n.valor), status: norm(n.status).startsWith('cancel') ? 'Cancelada' : 'Válida', chave: str(n.chave).replace(/\D/g, '')};
+}
+const nfChaveUnica = n => n.chave && n.chave.length === 44 ? 'k' + n.chave : ['n', n.tipo, n.numero, n.serie, norm(n.parceiro)].join('|');
+function nfMesclar(...listas){ const m = new Map(); listas.flat().forEach(n => { const k = nfChaveUnica(n); if (!m.has(k)) m.set(k, n); }); return [...m.values()]; }
+function nfLocais(){
+  try { return (JSON.parse(localStorage.getItem(NF_LS) || '[]') || []).map(n => nfNormalizar({...n, data: n.data ? new Date(n.data) : null}, 'local')); }
+  catch (e) { return []; }
+}
+function nfSalvarLocais(){
+  try { localStorage.setItem(NF_LS, JSON.stringify(DATA.notas.filter(n => n.origem === 'local').map(n => ({...n, data: n.data ? n.data.toISOString() : null})))); return true; }
+  catch (e) { return false; }
+}
+/* Lê o XML de uma NF-e (modelo 55/65) ou NFS-e padrão ABRASF e devolve os campos encontrados */
+function nfLerXML(texto){
+  const doc = new DOMParser().parseFromString(texto, 'application/xml');
+  if (doc.getElementsByTagName('parsererror').length) throw new Error('O arquivo não é um XML válido.');
+  const tag = (el, nome) => el ? el.getElementsByTagNameNS('*', nome)[0] || null : null;
+  const txt = (el, ...caminho) => { let e = el; for (const n of caminho){ e = tag(e, n); if (!e) return ''; } return (e.textContent || '').trim(); };
+  const infNFe = tag(doc, 'infNFe');
+  if (infNFe){
+    const emit = tag(infNFe, 'emit'), prods = [...infNFe.getElementsByTagNameNS('*', 'xProd')].map(e => e.textContent.trim());
+    const chave = (txt(doc, 'protNFe', 'chNFe') || (infNFe.getAttribute('Id') || '')).replace(/\D/g, '');
+    return {data: txt(infNFe, 'ide', 'dhEmi').slice(0, 10) || txt(infNFe, 'ide', 'dEmi'), numero: txt(infNFe, 'ide', 'nNF'), serie: txt(infNFe, 'ide', 'serie'),
+      parceiro: txt(emit, 'xNome'), doc: txt(emit, 'CNPJ') || txt(emit, 'CPF'), valor: txt(infNFe, 'total', 'ICMSTot', 'vNF'),
+      descricao: prods.length ? prods[0] + (prods.length > 1 ? ` e mais ${prods.length - 1} ite${prods.length > 2 ? 'ns' : 'm'}` : '') : '', chave, tipo: 'Entrada'};
+  }
+  const inf = tag(doc, 'InfNfse') || tag(doc, 'infNFSe');
+  if (inf){
+    const prest = tag(inf, 'PrestadorServico') || tag(inf, 'Prestador') || tag(inf, 'emit');
+    return {data: (txt(inf, 'DataEmissao') || txt(inf, 'dhEmi') || txt(inf, 'dhProc')).slice(0, 10), numero: txt(inf, 'Numero') || txt(inf, 'nNFSe'), serie: 'NFS-e',
+      parceiro: txt(prest, 'RazaoSocial') || txt(prest, 'xNome'), doc: txt(prest, 'Cnpj') || txt(prest, 'CNPJ') || txt(prest, 'Cpf'),
+      valor: txt(inf, 'ValorServicos') || txt(inf, 'vServ') || txt(inf, 'vLiq'), descricao: txt(inf, 'Discriminacao') || txt(inf, 'xDescServ'), chave: '', tipo: 'Entrada'};
+  }
+  throw new Error('Não reconheci o layout deste XML. Preencha os campos manualmente.');
+}
+
+/* =====================================================================
+   CÁLCULOS (KPIs) — fórmulas corrigidas pela Datalyse
+   ===================================================================== */
+let DATA = null, BASE = null, RAW_BOOK = null;
+function colorMap(names){ const m = new Map(); names.forEach((n,i) => m.set(n, PALETTE[i % PALETTE.length])); return n => m.get(n) || C.g500; }
+
+function buildBase(D){
+  const P = D.prem;
+  /* Mês 1 = primeiro mês encontrado em Receitas/Despesas */
+  let fin = uniq([...D.receitas.map(r => r.mes), ...D.despesas.map(d => d.mes)]).sort();
+  let first = fin[0] || uniq([...D.leads.map(l => l.mk), ...D.alunos.map(a => a.mk)]).sort()[0] || mkey(new Date());
+  const months = Array.from({length:12}, (_,i) => addMonths(first, i));
+  const labels = months.map(mlabel);
+
+  /* DRE 12M — realizado usa Receitas/Despesas; projetado usa premissas */
+  const dre = []; let lastRB = null, lastRealIdx = -1;
+  const ativosAll = D.alunos.filter(a => a.status === 'Ativo');
+  const ticketAll = ativosAll.length ? sum(ativosAll, 'mensalidade') / ativosAll.length : 0;
+  months.forEach((k, i) => {
+    const rec = D.receitas.filter(r => r.mes === k), des = D.despesas.filter(d => d.mes === k);
+    const real = rec.length > 0 || des.length > 0;
+    let rb, inad, cv, cf;
+    if (real){
+      rb = sum(rec, 'previsto'); inad = rb - sum(rec, 'recebido');
+      const rl = rb - inad;
+      cv = des.length ? sum(des.filter(d => d.tipo === 'Variável'), 'valor') : rl * (1 - P.margem);
+      cf = des.length ? sum(des.filter(d => d.tipo === 'Fixa'), 'valor') : P.custoFixo;
+      lastRB = rb; lastRealIdx = i;
+    } else {
+      const base = lastRB != null ? lastRB : ativosAll.length * ticketAll;
+      rb = base * Math.pow(1 + P.cresc, i - lastRealIdx);
+      inad = rb * (1 - P.taxaReceb);
+      cv = (rb - inad) * (1 - P.margem);
+      cf = P.custoFixo;
+    }
+    const rl = rb - inad, mc = rl - cv, res = mc - cf;
+    dre.push({k, label: labels[i], real, rb, inad, rl, cv, mc, cf, res, mop: rl ? res/rl : 0});
+  });
+  /* Fluxo de caixa */
+  let saldo = 0;
+  const caixa = dre.map(m => { const ini = saldo; const ent = m.rl, sai = m.cv + m.cf; saldo = ini + ent - sai; return {ini, ent, sai, liq: ent - sai, fim: saldo, real: m.real}; });
+  /* Churn 12M — só Base inicial do mês 1, Novos e Cancelamentos */
+  const churn12 = []; let b = D.churnRows.length ? num(D.churnRows[0].base) : 0;
+  D.churnRows.forEach((r, i) => { const ini = b, fim = ini + r.novos - r.cancel; const ch = ini > 0 ? r.cancel/ini : 0; churn12.push({label: i < 12 ? labels[i] : mlabel(addMonths(first, i)), ini, novos: r.novos, cancel: r.cancel, fim, churn: ch, ret: 1 - ch}); b = fim; });
+
+  /* Opções de filtros (dos dados) */
+  const modalidades = uniq([...D.turmas.map(t => t.modalidade), ...D.alunos.map(a => a.modalidade), ...D.leads.map(l => l.interesse), ...D.receitas.map(r => r.modalidade)]).filter(m => !['diversas','—','-','geral','todas'].includes(norm(m)));
+  const origens = uniq([...D.alunos.map(a => a.origem), ...D.leads.map(l => l.origem)]).filter(o => o !== '—');
+  const opts = {
+    periodo: uniq([...fin, ...D.leads.map(l => l.mk), ...D.alunos.map(a => a.mk), ...D.notas.map(n => n.mes)]).sort().map(k => ({value:k, label:mlabel(k)})),
+    modalidade: modalidades.map(v => ({value:v, label:v})),
+    professor: uniq(D.turmas.map(t => t.professor)).map(v => ({value:v, label:v})),
+    plano: uniq(D.alunos.map(a => a.plano)).filter(v => v !== '—').map(v => ({value:v, label:v})),
+    status: uniq(D.alunos.map(a => a.status)).sort().map(v => ({value:v, label:v})),
+    origem: origens.map(v => ({value:v, label:v})),
+    forma: uniq(D.receitas.map(r => r.forma)).filter(v => v !== '—').map(v => ({value:v, label:v})),
+    centro: uniq(D.despesas.map(d => d.centro)).filter(v => v !== '—').map(v => ({value:v, label:v})),
+  };
+  const colors = {
+    modalidade: colorMap(modalidades), origem: colorMap(origens), plano: colorMap(opts.plano.map(o => o.value)),
+    forma: colorMap(opts.forma.map(o => o.value)), centro: colorMap(opts.centro.map(o => o.value)),
+    fixvar: n => n === 'Fixa' ? C.g300 : C.r500, status: n => n === 'Ativo' ? C.g300 : C.r500,
+  };
+  const allDates = [...D.alunos.flatMap(a => [a.matricula, a.cancelamento]), ...D.receitas.map(r => r.data), ...D.despesas.map(d => d.data), ...D.leads.map(l => l.data)].filter(Boolean);
+  const lastDate = allDates.length ? new Date(Math.max(...allDates.map(d => d.getTime()))) : null;
+  return {months, labels, dre, caixa, churn12, lastRealIdx, opts, colors, lastDate, ativosAll: ativosAll.length, ticketAll};
+}
+
+function computeView(){
+  const f = state.filters, D = DATA, P = D.prem;
+  const inMod = m => !f.modalidade || m === f.modalidade;
+  const al = D.alunos.filter(a => inMod(a.modalidade) && (!f.plano || a.plano === f.plano) && (!f.status || a.status === f.status) && (!f.origem || a.origem === f.origem) && (!f.periodo || a.mk === f.periodo));
+  const rec = D.receitas.filter(r => (!f.periodo || r.mes === f.periodo) && inMod(r.modalidade) && (!f.forma || r.forma === f.forma));
+  const des = D.despesas.filter(d => (!f.periodo || d.mes === f.periodo) && (!f.centro || d.centro === f.centro));
+  const leads = D.leads.filter(l => (!f.periodo || l.mk === f.periodo) && inMod(l.interesse) && (!f.origem || l.origem === f.origem));
+  const tur = D.turmas.filter(t => inMod(t.modalidade) && (!f.professor || t.professor === f.professor));
+  const ativos = al.filter(a => a.status === 'Ativo'), canc = al.filter(a => a.status === 'Cancelado');
+  const ticket = ativos.length ? sum(ativos, 'mensalidade') / ativos.length : 0;                 // Correção 2
+  const churnReal = (ativos.length + canc.length) ? canc.length / (ativos.length + canc.length) : 0; // Correção 4
+  const prev = sum(rec, 'previsto'), receb = sum(rec, 'recebido');
+  const inad = prev ? (prev - receb) / prev : 0;                                                     // Correção 8
+  const novosLeads = leads.filter(l => l.matriculou).length;
+  const cacReal = novosLeads ? sum(leads, 'cac') / novosLeads : null;
+  const cac = cacReal ?? P.cac;
+  const ltv = P.churn > 0 ? ticket * P.margem / P.churn : 0;                                         // Correção 1
+  const ltvCac = cac > 0 ? ltv / cac : 0;                                                            // Correção 8
+  const peR = P.margem > 0 ? P.custoFixo / P.margem : 0;
+  const peAl = ticket > 0 ? Math.ceil(peR / ticket) : null;                                          // Correção 7
+  const tCap = tur.filter(t => t.capacidade > 0);
+  const ocupMedia = avg(tCap.map(t => t.ocup));                                                      // Correção 6
+  /* Fotografia da base no fim do mês de referência e do mês anterior (comparativo) */
+  const refK = f.periodo || BASE.months[Math.max(0, BASE.lastRealIdx)];
+  const endOf = k => { const [y, m] = k.split('-').map(Number); return new Date(y, m, 0, 23, 59); };
+  const snap = k => { const d = endOf(k); const at = D.alunos.filter(a => inMod(a.modalidade) && (!f.plano || a.plano === f.plano) && (!f.origem || a.origem === f.origem) && a.matricula && a.matricula <= d && (a.status !== 'Cancelado' || (a.cancelamento && a.cancelamento > d))); return {n: at.length, mrr: sum(at, 'mensalidade')}; };
+  const snapCur = snap(refK), snapPrev = snap(addMonths(refK, -1));
+  const mrr = sum(ativos, 'mensalidade');
+  const nf = D.notas.filter(n => !f.periodo || n.mes === f.periodo);
+  return {nf, mrr, snapCur, snapPrev, al, ativos, canc, rec, des, leads, tur, tCap, ticket, churnReal, prev, receb, inad, novosLeads, cacReal, cac, ltv, ltvCac, peR, peAl, ocupMedia, despTot: sum(des, 'valor')};
+}
+
+function projection(s){
+  const P = DATA.prem;
+  /* O crescimento da planilha é líquido com o churn da premissa; churn acima/abaixo dela altera o líquido */
+  const gNet = Math.max(-0.99, s.cresc - (s.churn - P.churn));
+  const a0 = BASE.ativosAll, pe = s.margem > 0 ? s.custoFixo / s.margem : Infinity;
+  const rows = []; let acum = 0;
+  for (let m = 0; m < 12; m++){ const alunos = a0 * Math.pow(1 + gNet, m), fat = alunos * s.ticket; acum += fat; rows.push({alunos, fat, acum, res: fat * s.margem - s.custoFixo}); }
+  return {rows, pe, gNet, beIdx: rows.findIndex(r => r.fat >= pe), metaIdx: rows.findIndex(r => r.alunos >= P.meta), alunosPE: s.ticket > 0 ? Math.ceil(pe / s.ticket) : null,
+    ltv: s.churn > 0 ? s.ticket * s.margem / s.churn : 0};
+}
+
+/* =====================================================================
+   FILTROS
+   ===================================================================== */
+const FILTERS = {
+  periodo: {label:'Período', all:'Todos', main:true},
+  modalidade: {label:'Modalidade', all:'Todas', main:true},
+  professor: {label:'Professor', all:'Todos', main:true},
+  plano: {label:'Plano', all:'Todos'},
+  status: {label:'Status do aluno', all:'Todos'},
+  origem: {label:'Origem', all:'Todas'},
+  forma: {label:'Forma de pagamento', all:'Todas'},
+  centro: {label:'Centro de custo', all:'Todos'},
+};
+const state = {filters: Object.fromEntries(Object.keys(FILTERS).map(k => [k, null])), tab: 'overview', sim: null};
+const ddRefs = {};
+let ddSeq = 0;
+
+function makeDropdown({label, options, value, allLabel, onChange}){
+  const wrap = document.createElement('div'); wrap.className = 'dd';
+  const id = 'dd' + (++ddSeq);
+  wrap.innerHTML = `<span class="dd-label" id="${id}-l">${esc(label)}</span><div class="dd-ctl"><button type="button" class="dd-btn" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="${id}-l ${id}-v"><span class="dd-val" id="${id}-v"></span><svg class="dd-caret" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3"/></svg></button><ul class="dd-menu" role="listbox" aria-labelledby="${id}-l" hidden></ul></div>`;
+  const btn = wrap.querySelector('.dd-btn'), menu = wrap.querySelector('.dd-menu'), valEl = wrap.querySelector('.dd-val');
+  let all = allLabel != null ? [{value:null, label:allLabel}, ...options] : options;
+  function paint(){
+    const cur = all.find(o => o.value === value) || all[0];
+    valEl.textContent = cur ? cur.label : '—';
+    wrap.classList.toggle('is-set', allLabel != null && value != null);
+    menu.innerHTML = all.map((o, i) => `<li role="option" tabindex="-1" data-i="${i}" aria-selected="${o.value === value}">${esc(o.label)}</li>`).join('');
+  }
+  function open(){
+    closeAllDropdowns(wrap); menu.hidden = false; wrap.classList.add('open'); btn.setAttribute('aria-expanded','true');
+    menu.classList.remove('right'); const r = menu.getBoundingClientRect(); if (r.right > window.innerWidth - 8) menu.classList.add('right');
+    (menu.querySelector('[aria-selected="true"]') || menu.firstElementChild)?.focus();
+  }
+  function close(focusBtn){ menu.hidden = true; wrap.classList.remove('open'); btn.setAttribute('aria-expanded','false'); if (focusBtn) btn.focus(); }
+  function pick(i){ const o = all[i]; if (!o) return; close(true); if (o.value !== value){ value = o.value; paint(); onChange(value); } }
+  btn.addEventListener('click', e => { e.stopPropagation(); menu.hidden ? open() : close(); });
+  btn.addEventListener('keydown', e => { if (e.key === 'ArrowDown' || e.key === 'ArrowUp'){ e.preventDefault(); open(); } });
+  menu.addEventListener('click', e => { e.stopPropagation(); const li = e.target.closest('li'); if (li) pick(+li.dataset.i); });
+  menu.addEventListener('keydown', e => {
+    const items = [...menu.children], i = items.indexOf(document.activeElement);
+    if (e.key === 'ArrowDown'){ e.preventDefault(); items[Math.min(i+1, items.length-1)]?.focus(); }
+    else if (e.key === 'ArrowUp'){ e.preventDefault(); items[Math.max(i-1, 0)]?.focus(); }
+    else if (e.key === 'Home'){ e.preventDefault(); items[0]?.focus(); }
+    else if (e.key === 'End'){ e.preventDefault(); items[items.length-1]?.focus(); }
+    else if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); pick(i); }
+    else if (e.key === 'Escape'){ e.preventDefault(); close(true); }
+    else if (e.key === 'Tab'){ close(); }
+  });
+  wrap._set = v => { value = v; paint(); };
+  wrap._setOptions = (opts, v) => { all = allLabel != null ? [{value:null, label:allLabel}, ...opts] : opts; value = v; paint(); };
+  wrap._close = () => close();
+  paint();
+  return wrap;
+}
+function closeAllDropdowns(except){ document.querySelectorAll('.dd.open').forEach(d => { if (d !== except) d._close(); }); }
+
+function buildFilterUI(){
+  const main = document.getElementById('fbMain'), more = document.getElementById('morePanel');
+  main.innerHTML = ''; more.innerHTML = '';
+  for (const [k, def] of Object.entries(FILTERS)){
+    const dd = makeDropdown({label: def.label, options: BASE.opts[k], value: state.filters[k], allLabel: def.all, onChange: v => setFilter(k, v)});
+    ddRefs[k] = dd; (def.main ? main : more).appendChild(dd);
+  }
+}
+function activeFilters(){ return Object.keys(FILTERS).filter(k => state.filters[k] != null); }
+function filterValueLabel(k){ const v = state.filters[k]; return k === 'periodo' ? mlabel(v) : v; }
+function setFilter(k, v){ state.filters[k] = v; ddRefs[k]?._set(v); afterFilterChange(); }
+function toggleFilter(k, v){
+  if (!BASE.opts[k].some(o => o.value === v)) return;
+  setFilter(k, state.filters[k] === v ? null : v);
+  toast(state.filters[k] ? `Filtro aplicado: ${FILTERS[k].label} = ${filterValueLabel(k)}` : `Filtro removido: ${FILTERS[k].label}`);
+}
+function clearFilters(){ for (const k in FILTERS){ state.filters[k] = null; ddRefs[k]?._set(null); } afterFilterChange(); }
+function afterFilterChange(){ renderChips(); save(); renderAll(); }
+function renderChips(){
+  const act = activeFilters();
+  document.getElementById('chips').innerHTML = act.map(k => `<button type="button" class="chip" data-k="${k}" aria-label="Remover filtro ${esc(FILTERS[k].label)}: ${esc(filterValueLabel(k))}">${esc(FILTERS[k].label)}: <b>${esc(filterValueLabel(k))}</b><span class="x" aria-hidden="true">×</span></button>`).join('');
+  document.getElementById('btnClear').hidden = act.length === 0;
+  const nMore = act.filter(k => !FILTERS[k].main).length, cnt = document.getElementById('moreCnt');
+  cnt.hidden = nMore === 0; cnt.textContent = nMore;
+}
+function sanitizeFilters(){ for (const k in FILTERS){ const v = state.filters[k]; if (v != null && !BASE.opts[k].some(o => o.value === v)) state.filters[k] = null; } }
+function save(){ try { localStorage.setItem(LS_KEY, JSON.stringify({filters: state.filters, tab: state.tab})); } catch (e) {} }
+function restore(){
+  try {
+    const s = JSON.parse(localStorage.getItem(LS_KEY) || 'null');
+    if (s && s.filters) for (const k in FILTERS) state.filters[k] = s.filters[k] ?? null;
+    if (s && PAGES.some(p => p.id === s.tab)) state.tab = s.tab;
+  } catch (e) {}
+}
+
+/* =====================================================================
+   GRÁFICOS — infraestrutura comum
+   ===================================================================== */
+const charts = {};
+const CARD_APPLIES = {};
+const PAGE_LAYOUT = {
+  overview: {title:'Visão Geral', desc:'Resumo executivo: base, receita, eficiência comercial e saúde operacional.', kpis:12, cards:[
+    {id:'gauge', t:'Alunos ativos × meta', s:'Velocímetro da base ativa frente à meta da premissa', span:4, h:290, ap:['modalidade','plano','status','origem','periodo']},
+    {id:'result12', t:'Resultado operacional · 12 meses', s:'DRE corrigida — realizado (linha sólida) × projetado (tracejada)', span:8, h:290, ap:['periodo']},
+    {id:'pieMod', t:'Matrículas em turmas por modalidade', s:'Clique numa fatia para filtrar a página', span:5, h:310, ap:['modalidade','professor']},
+    {id:'alerts', t:'Alertas', s:'Gerados automaticamente a partir de regras de negócio', span:7, html:true},
+  ]},
+  finance: {title:'Financeiro', desc:'Receitas, despesas, DRE gerencial e caixa — realizado e projetado.', kpis:5, cards:[
+    {id:'waterfall', t:'DRE do período em cascata', s:'', span:6, h:330, ap:['periodo']},
+    {id:'combo12', t:'Receita líquida × custos · 12 meses', s:'Colunas translúcidas = meses projetados', span:6, h:330, ap:['periodo']},
+    {id:'catBar', t:'Despesas por categoria', s:'Ordenado do maior para o menor', span:6, h:300, ap:['periodo','centro']},
+    {id:'centroPie', t:'Despesas por centro de custo', s:'Clique para filtrar', span:3, h:300, ap:['periodo','centro']},
+    {id:'fixVar', t:'Fixas × variáveis', s:'Composição das despesas', span:3, h:300, ap:['periodo','centro']},
+    {id:'formaPie', t:'Receita por forma de pagamento', s:'Valor previsto · clique para filtrar', span:4, h:300, ap:['periodo','modalidade','forma']},
+    {id:'cash', t:'Saldo de caixa acumulado · 12 meses', s:'Fluxo de caixa: entradas líquidas − saídas', span:8, h:300, ap:['periodo']},
+    {id:'dreTable', t:'DRE gerencial · 12 meses', s:'Colunas com fundo destacado são projeções a partir das premissas', span:12, html:true, ap:['periodo']},
+  ]},
+  nf: {title:'Notas fiscais', desc:'Controle das notas de entrada (compras e serviços) e das notas emitidas pela academia.', kpis:5, cards:[
+    {id:'nfMes', t:'Notas por mês · entradas × saídas', s:'Valor total das notas válidas', span:6, h:300, ap:['periodo']},
+    {id:'nfConc', t:'Conciliação · despesas × notas de entrada', s:'Por categoria: mostra o que foi pago sem nota fiscal', span:6, h:300, ap:['periodo']},
+    {id:'nfTable', t:'Notas lançadas', s:'Busque, filtre por tipo, importe o XML ou adicione uma nota manualmente', span:12, html:true, ap:['periodo']},
+  ]},
+  students: {title:'Alunos & Retenção', desc:'Base de alunos, cancelamentos e evolução da retenção.', kpis:5, cards:[
+    {id:'churnLines', t:'Churn Rate × Retention Rate · 12 meses', s:'Taxa de cancelamento e de retenção mês a mês', span:6, h:300, ap:['periodo']},
+    {id:'movStack', t:'Movimentação da base · 12 meses', s:'Novos e cancelamentos (colunas) e base final (linha)', span:6, h:300, ap:['periodo']},
+    {id:'planoPie', t:'Alunos por plano', s:'Clique para filtrar', span:4, h:300, ap:['modalidade','plano','status','origem','periodo']},
+    {id:'origemStatus', t:'Alunos por origem e status', s:'Clique numa coluna para filtrar pela origem', span:8, h:300, ap:['modalidade','plano','status','origem','periodo']},
+    {id:'alunosTable', t:'Cadastro de alunos', s:'Busque, ordene pelas colunas e navegue entre páginas', span:12, html:true, ap:['modalidade','plano','status','origem','periodo']},
+  ]},
+  sales: {title:'Comercial', desc:'Funil de leads, origem das matrículas e eficiência de aquisição.', kpis:6, cards:[
+    {id:'funnel', t:'Funil de conversão', s:'% de passagem entre etapas', span:6, h:320, ap:['periodo','modalidade','origem']},
+    {id:'leadOrigem', t:'Leads por origem', s:'Clique para filtrar', span:6, h:320, ap:['periodo','modalidade','origem']},
+    {id:'origemConv', t:'Leads × matrículas por origem', s:'Taxa de conversão acima de cada grupo', span:5, h:300, ap:['periodo','modalidade','origem']},
+    {id:'convMod', t:'Conversão por modalidade de interesse', s:'Matrículas ÷ leads · clique para filtrar', span:4, h:300, ap:['periodo','modalidade','origem']},
+    {id:'perdas', t:'Motivos de perda', s:'Leads que não viraram matrícula', span:3, html:true, ap:['periodo','modalidade','origem']},
+  ]},
+  ops: {title:'Operação', desc:'Turmas, grade horária, ocupação e rentabilidade por turma e modalidade.', kpis:5, cards:[
+    {id:'ocupTurma', t:'Taxa de ocupação por turma', s:'Linhas de referência em 80% (alta) e 50% (média)', span:7, h:310, ap:['modalidade','professor'], legend:'status'},
+    {id:'heatmap', t:'Mapa de calor · dia × horário', s:'Ocupação das turmas em cada dia e faixa', span:5, h:310, ap:['modalidade','professor']},
+    {id:'faixas', t:'Capacidade × matriculados × presença por faixa', s:'Aba Ocupacao_Horarios · faixas vazias = oportunidade de grade', span:7, h:300, ap:[]},
+    {id:'margemTurma', t:'Margem estimada por turma', s:'Receita potencial − custo mensal', span:5, h:300, ap:['modalidade','professor']},
+    {id:'margemMod', t:'Margem por modalidade (corrigida)', s:'Receita potencial das turmas × custo mensal das turmas · clique para filtrar', span:7, html:true, ap:['modalidade','professor']},
+    {id:'profRank', t:'Ranking de professores', s:'Ordenado por ocupação média · clique para filtrar', span:5, html:true, ap:['modalidade','professor']},
+  ]},
+  proj: {title:'Projeções', desc:'Faturamento e base projetados para 12 meses e simulador “E se?”.', kpis:4, tag:'Simulação independente dos filtros', cards:[
+    {id:'sim', t:'Simulador “E se?”', s:'Mova os controles e veja o impacto em tempo real', span:4, html:true, row2:true, ap:[]},
+    {id:'projFat', t:'Faturamento projetado · 12 meses', s:'Mensal (linha, eixo esq.) e acumulado (área, eixo dir.)', span:8, h:300, ap:[]},
+    {id:'alunosProj', t:'Alunos projetados × meta', s:'', span:8, h:300, ap:[]},
+  ]},
+};
+
+function buildPages(){
+  const main = document.getElementById('main');
+  main.innerHTML = PAGES.map(p => {
+    const L = PAGE_LAYOUT[p.id];
+    const cards = L.cards.map(c => {
+      CARD_APPLIES[c.id] = c.ap;
+      const leg = c.legend === 'status' ? `<div class="legend-inline">${['Alta','Média','Baixa'].map(s => `<span><i style="background:${STATUS_COLOR[s]}"></i>${s} ${s==='Alta'?'≥ 80%':s==='Média'?'≥ 50%':'< 50%'}</span>`).join('')}</div>` : '';
+      const body = c.html ? `<div class="card-body" id="hb-${c.id}"></div>` :
+        `<div class="chart" id="ch-${c.id}" style="height:${c.h}px" role="img" aria-label="${esc(c.t)}"></div><div class="empty" style="height:${c.h}px" hidden>${icon('empty')}<span>Sem dados para os filtros selecionados</span></div>`;
+      return `<article class="card span-${c.span}${c.row2 ? ' row-2' : ''}" data-card="${c.id}"><div class="card-h"><div><h3>${esc(c.t)}</h3><p id="sub-${c.id}">${esc(c.s)}</p>${leg}</div><span class="nf" hidden></span></div>${c.id === 'alunosProj' ? '<div id="metaCallout"></div>' : ''}${body}</article>`;
+    }).join('');
+    return `<section class="page" id="page-${p.id}" data-page="${p.id}" role="tabpanel" aria-labelledby="tab-${p.id}">
+      <div class="page-head"><div><h2>${L.title}</h2><p>${L.desc}</p></div>${L.tag ? `<span class="page-tag">${L.tag}</span>` : ''}</div>
+      <div class="kpis" data-n="${L.kpis}" id="kpi-${p.id}"></div>
+      <div class="grid">${cards}</div></section>`;
+  }).join('');
+}
+
+function setBadge(id){
+  const card = document.querySelector(`[data-card="${id}"]`); if (!card) return;
+  const ap = CARD_APPLIES[id], el = card.querySelector('.nf');
+  if (!ap){ el.hidden = true; return; }
+  const not = activeFilters().filter(k => !ap.includes(k));
+  el.hidden = not.length === 0;
+  el.textContent = not.length ? `não filtrado por ${not.map(k => FILTERS[k].label.toLowerCase()).join(', ')}` : '';
+  el.title = el.textContent;
+}
+function draw(id, option, o = {}){
+  setBadge(id);
+  const card = document.querySelector(`[data-card="${id}"]`);
+  const el = document.getElementById('ch-' + id), empty = card.querySelector('.empty');
+  if (o.empty){ if (charts[id]){ charts[id].dispose(); delete charts[id]; } el.hidden = true; empty.hidden = false; return; }
+  el.hidden = false; empty.hidden = true;
+  let c = charts[id];
+  if (!c || c.isDisposed()){ c = echarts.init(el, 'datalyse', {renderer: 'canvas'}); charts[id] = c; }
+  option.animation = ANIM; option.animationDuration = 700;
+  c.setOption(option, true);
+  c.off('click'); if (o.onClick) c.on('click', o.onClick);
+  if (o.aria) el.setAttribute('aria-label', o.aria);
+}
+const W = id => (document.getElementById('ch-' + id)?.clientWidth || 600);
+const periodIdx = () => state.filters.periodo ? BASE.months.indexOf(state.filters.periodo) : -1;
+const dim = i => { const p = periodIdx(); return p < 0 || p === i ? 1 : 0.35; };
+function axisTip(fmt){ return {trigger:'axis', axisPointer:{type:'line', lineStyle:{color:'#3A3A3F'}}, formatter: ps => {
+  const seen = new Set(); let h = `<b>${esc(ps[0].axisValueLabel)}</b>`;
+  ps.forEach(p => { const v = Array.isArray(p.value) ? p.value[1] : p.value; if (v == null || v === '-' || seen.has(p.seriesName) || p.seriesName.startsWith('_')) return; seen.add(p.seriesName); h += `<br>${p.marker}${esc(p.seriesName)}: <b>${fmt(v)}</b>`; });
+  return h; }}; }
+const gradient = (a = .35) => new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:`rgba(142,42,48,${a})`},{offset:1,color:'rgba(142,42,48,0)'}]);
+const pLine = i => ({markLine: periodIdx() >= 0 ? {silent:true, symbol:'none', data:[{xAxis: periodIdx()}], lineStyle:{color:C.r300, type:'dotted', width:1}, label:{formatter:'filtro', color:C.r300, fontSize:10}} : undefined});
+
+function pieOption(id, items, {name, fmt = F.int, color, donut = false, centerText} = {}){
+  const narrow = W(id) < 440, total = items.reduce((s, i) => s + i.value, 0);
+  const pctOf = n => { const it = items.find(i => i.name === n); return total ? F.pct(it.value / total) : '0%'; };
+  const center = donut || narrow ? ['50%', donut ? '44%' : '40%'] : ['36%', '52%'];
+  const opt = {
+    tooltip: {trigger:'item', formatter: p => `${p.marker}${esc(p.name)}<br><b>${fmt(p.value)}</b> · ${F.pct(p.percent/100)} do total`},
+    legend: (donut || narrow) ? {type:'plain', bottom:0, left:'center', itemGap:10, itemWidth:9, itemHeight:9, formatter: n => `${n} {v|${pctOf(n)}}`, textStyle:{color:C.muted, fontSize:11, rich:{v:{color:C.text, fontWeight:600, fontSize:11}}}}
+                              : {type:'scroll', orient:'vertical', right:4, top:'middle', formatter: n => `{n|${n}}{v|${pctOf(n)}}`, textStyle:{rich:{n:{color:C.muted, width:92, fontSize:11.5}, v:{color:C.text, fontWeight:600, fontSize:11.5}}}},
+    series: [{type:'pie', name, radius: donut ? ['52%','74%'] : ['0%', narrow ? (items.length > 3 ? '50%' : '56%') : '70%'], center, avoidLabelOverlap:true, minAngle:3,
+      itemStyle:{borderColor:C.surface, borderWidth:2, borderRadius: donut ? 5 : 3},
+      label: donut ? {show:false} : {show:true, formatter: p => p.percent >= 3 ? `${nf1.format(p.percent)}%` : '', color:C.text, fontSize:11, fontWeight:600},
+      labelLine:{length:8, length2:6, lineStyle:{color:C.dim}},
+      emphasis:{scale:true, scaleSize:5, label:{show:!donut}},
+      data: items.map(i => ({name:i.name, value:i.value, itemStyle:{color: color(i.name)}}))}],
+  };
+  if (donut && centerText) opt.title = {text: centerText[0], subtext: centerText[1], left:'center', top:'37%', itemGap:2, textStyle:{color:C.text, fontFamily:'Sora', fontSize:17, fontWeight:600}, subtextStyle:{color:C.muted, fontSize:11}};
+  return opt;
+}
+function hbarOption(items, {fmt = F.int, color = () => C.r500, labelFmt, tip} = {}){
+  const total = items.reduce((s, i) => s + i.value, 0);
+  return {
+    grid:{left:6, right:118, top:6, bottom:6, containLabel:true},
+    xAxis:{type:'value', axisLabel:{show:false}, splitLine:{show:false}},
+    yAxis:{type:'category', inverse:true, data: items.map(i => i.name), axisLabel:{color:C.text, fontSize:12, width:110, overflow:'truncate'}},
+    tooltip:{trigger:'item', formatter: tip || (p => `${esc(p.name)}<br><b>${fmt(p.value)}</b> · ${F.pct(total ? p.value/total : 0)} do total`)},
+    series:[{type:'bar', barMaxWidth:18, data: items.map(i => ({value:i.value, itemStyle:{color: color(i.name), borderRadius:[0,4,4,0]}})),
+      showBackground:true, backgroundStyle:{color:'rgba(255,255,255,.025)', borderRadius:[0,4,4,0]},
+      label:{show:true, position:'right', color:C.text, fontSize:11.5, formatter: labelFmt || (p => `${fmt(p.value)}  {m|${F.pct(total ? p.value/total : 0)}}`), rich:{m:{color:C.muted, fontSize:11}}}}],
+  };
+}
+/* Pizza só até 6 categorias; acima disso vira barra horizontal ordenada */
+function pieOrBar(id, items, cfg){
+  items = items.filter(i => i.value > 0).sort((a, b) => b.value - a.value);
+  if (!items.length) return draw(id, {}, {empty:true});
+  const opt = items.length > 6 ? hbarOption(items, {fmt: cfg.fmt}) : pieOption(id, items, cfg);
+  draw(id, opt, {onClick: cfg.filter ? p => toggleFilter(cfg.filter, p.name) : null, aria: `${cfg.name}: ` + items.map(i => `${i.name} ${(cfg.fmt||F.int)(i.value)}`).join(', ')});
+}
+
+/* =====================================================================
+   UI — KPIs, tooltips, alertas
+   ===================================================================== */
+const prevKpi = {};
+function renderKpis(pid, list){
+  const el = document.getElementById('kpi-' + pid);
+  el.innerHTML = list.map(k => `<div class="kpi" data-k="${k.id}">
+    <div class="kpi-top"><span class="kpi-label" title="${esc(k.label)}">${esc(k.label)}</span><button class="info" type="button" data-tip="${esc(k.tip)}"${k.dec ? ` data-dec="${esc(k.dec)}"` : ''} aria-label="Como é calculado e que decisão apoia: ${esc(k.label)}">i</button></div>
+    ${k.sub ? `<div class="kpi-sub" title="${esc(k.sub)}">${esc(k.sub)}</div>` : ''}
+    <div class="kpi-val${k.neg ? ' neg' : ''}${k.txt ? ' txt' : ''}">${k.v == null ? '—' : k.f(k.v)}</div>
+    <div class="kpi-ref">${k.trend ? `<span class="tr ${k.trend.bad ? 'bad' : 'good'}">${k.trend.up ? '▲' : '▼'} ${k.trend.t}</span>` : ''}${k.ref ? `<span>${k.ref}</span>` : ''}</div></div>`).join('');
+  list.forEach(k => {
+    const key = pid + k.id, node = el.querySelector(`[data-k="${k.id}"] .kpi-val`);
+    if (k.v != null && !k.noAnim && typeof k.v === 'number') countUp(node, prevKpi[key] ?? 0, k.v, k.f);
+    prevKpi[key] = typeof k.v === 'number' ? k.v : 0;
+  });
+}
+function countUp(node, from, to, fmt){
+  if (!ANIM || from === to){ node.textContent = fmt(to); return; }
+  const t0 = performance.now(), dur = 650;
+  const step = t => { const p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 3); node.textContent = fmt(from + (to - from) * e); if (p < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+const tipEl = document.getElementById('tip');
+function showTip(t){
+  const dec = t.dataset.dec;
+  if (dec) tipEl.innerHTML = `<b>Como é calculado</b>${esc(t.dataset.tip)}<div class="dec"><b>Que decisão apoia</b>${esc(dec)}</div>`;
+  else tipEl.textContent = t.dataset.tip;
+  tipEl.hidden = false;
+  const r = t.getBoundingClientRect(), w = tipEl.offsetWidth, h = tipEl.offsetHeight;
+  let left = Math.min(Math.max(8, r.left + r.width/2 - w/2), window.innerWidth - w - 8);
+  let top = r.bottom + 8; if (top + h > window.innerHeight - 8) top = r.top - h - 8;
+  tipEl.style.left = left + 'px'; tipEl.style.top = top + 'px';
+}
+function hideTip(){ tipEl.hidden = true; }
+document.addEventListener('mouseover', e => { const t = e.target.closest('[data-tip]'); if (t) showTip(t); });
+document.addEventListener('mouseout', e => { if (e.target.closest('[data-tip]')) hideTip(); });
+document.addEventListener('focusin', e => { const t = e.target.closest('[data-tip]'); t ? showTip(t) : hideTip(); });
+window.addEventListener('scroll', hideTip, {passive:true});
+let toastTimer;
+function toast(msg){ const t = document.getElementById('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => t.hidden = true, 2600); }
+function showWarnings(list, title){
+  const b = document.getElementById('banner');
+  document.getElementById('bannerTitle').textContent = title || 'Atenção aos dados da planilha';
+  document.getElementById('bannerList').innerHTML = list.map(w => `<li>${esc(w)}</li>`).join('');
+  b.hidden = list.length === 0;
+}
+
+/* =====================================================================
+   GRÁFICOS POR PÁGINA
+   ===================================================================== */
+/* ---------- 7.1 Visão Geral ---------- */
+function renderOverview(V){
+  const P = DATA.prem, B = BASE, at = V.ativos.length;
+  const cacTrend = V.cacReal != null && P.cac ? {up: V.cacReal > P.cac, bad: V.cacReal > P.cac, t: `${F.pct(Math.abs(V.cacReal/P.cac - 1))} vs premissa`} : null;
+  const momN = momTrend(V.snapCur.n, V.snapPrev.n, d => `${d > 0 ? '+' : '−'}${F.int(Math.abs(d))} alunos`);
+  const momR = momTrend(V.snapCur.mrr, V.snapPrev.mrr, (d, p) => F.pct(Math.abs(d) / p));
+  renderKpis('overview', [
+    {id:'ativos', label:'Alunos ativos', sub:'Base atual de alunos', v:at, f:F.int, trend:momN, ref:`<strong>${F.pct(P.meta ? at/P.meta : 0)}</strong> da meta de ${F.int(P.meta)}`, tip:'Contagem de alunos com Status = Ativo na aba Alunos (respeita os filtros).', dec:'Abaixo da meta: concentre a captação nos canais que mais convertem (página Comercial) e acompanhe o churn.'},
+    {id:'mrr', label:'MRR', sub:'Receita recorrente mensal', v:V.mrr, f:F.money, trend:momR, ref:`mensalidades de ${F.int(at)} aluno${at === 1 ? '' : 's'} ativo${at === 1 ? '' : 's'}`, tip:'Monthly Recurring Revenue: soma das mensalidades dos alunos ativos, a receita que se repete todo mês, sem vendas avulsas de produtos.', dec:'É a parte previsível do caixa. Use-a para planejar contratações e investimentos; para crescer, aumente a base ou o ticket.'},
+    {id:'receb', label:'Receita recebida', sub:'Entrada de caixa no período', v:V.receb, f:F.money, ref:`de ${F.money(V.prev)} previstos`, tip:'Soma de “Valor Recebido” na aba Receitas (mensalidades + produtos).', dec:'Muito abaixo do previsto indica falha na cobrança: acione os pendentes e incentive o pagamento recorrente.'},
+    {id:'ticket', label:'Ticket médio', sub:'Mensalidade média por aluno', v:V.ticket, f:F.brl, ref:'só alunos ativos', tip:'Soma das mensalidades dos alunos ATIVOS ÷ nº de ativos.', dec:'Ticket baixo: ofereça planos combinados (ex.: Multitreino) ou revise a tabela de preços.'},
+    {id:'churn', label:'Churn Rate', sub:'Taxa de cancelamento', v:V.churnReal, f:F.pct, trend: V.churnReal > P.churn ? {up:true, bad:true, t:`acima da premissa (${F.pct(P.churn)})`} : {up:false, bad:false, t:`dentro da premissa (${F.pct(P.churn)})`}, tip:'Cancelados ÷ (ativos + cancelados) no período. As séries de 12 meses usam a aba Churn_Cancelamentos e o LTV usa o churn mensal da premissa.', dec:'Se subir, contate os alunos com baixa frequência e reforce o acompanhamento nos primeiros 60 dias.'},
+    {id:'cac', label:'CAC', sub: V.cacReal != null ? 'Custo de aquisição por aluno' : 'Custo de aquisição (premissa)', v:V.cac, f:F.brl, trend:cacTrend, ref: V.cacReal != null ? `premissa ${F.brl(P.cac)}` : 'sem matrículas no funil', tip:'Customer Acquisition Cost: soma do CAC dos leads ÷ leads matriculados. Sem matrículas no filtro, usa o CAC estimado das premissas.', dec:'CAC alto: corte os canais caros e concentre o investimento nos que mais convertem.'},
+    {id:'ltv', label:'LTV', sub:'Valor gerado pelo aluno', v:V.ltv, f:F.money, ref:`${F.brl(V.ticket)} × ${F.pct0(P.margem)} ÷ ${F.pct0(P.churn)}`, tip:'Lifetime Value: ticket médio × margem de contribuição ÷ churn mensal (premissa).', dec:'Cresce quando o aluno fica mais tempo ou paga mais: invista em retenção e em planos de maior valor.'},
+    {id:'ltvcac', label:'LTV/CAC', sub:'Retorno do custo de aquisição', v:V.ltvCac, f:F.x, trend: V.ltvCac >= 3 ? {up:true, bad:false, t:'saudável (≥ 3x)'} : {up:false, bad:true, t:'abaixo de 3x'}, tip:'Quanto cada R$ 1 investido para conquistar um aluno retorna em margem ao longo da vida dele.', dec:'Abaixo de 3x, a aquisição está cara. Acima de 5x, há espaço para investir mais em marketing.'},
+    {id:'pe', label:'Break-even', sub:'Ponto de equilíbrio mensal', v:V.peR, f:F.brl0, ref: V.peAl != null ? `<strong>≈ ${F.int(V.peAl)} alunos</strong> · margem ${F.pct0(P.margem)}` : `margem ${F.pct0(P.margem)}`, tip:'Receita mensal necessária = custos fixos ÷ margem de contribuição. Em alunos = break-even ÷ ticket médio.', dec:'É a meta mínima do comercial: abaixo desse faturamento a academia opera no prejuízo.'},
+    {id:'ocup', label:'Taxa de ocupação', sub:'Uso da capacidade das turmas', v:V.ocupMedia, f:F.pct, ref:`${V.tCap.length} turmas com capacidade`, trend: V.ocupMedia >= .8 ? {up:true, bad:false, t:'alta'} : V.ocupMedia < .5 ? {up:false, bad:true, t:'baixa'} : null, tip:'Média de Matriculados ÷ Capacidade, apenas turmas com capacidade > 0.', dec:'Abaixo de 50%: junte turmas ou mude o horário. Acima de 80%: abra novas turmas.'},
+    {id:'novos', label:'Novos alunos', sub:'Matrículas no período', v:V.al.length, f:F.int, ref:`${F.int(V.novosLeads)} vindos do funil de leads`, tip:'Matrículas registradas na aba Alunos no período filtrado. Referência: leads com “Matriculou = Sim”.', dec:'Compare com os cancelamentos: a base só cresce se as matrículas superarem as saídas.'},
+    {id:'inad', label:'Inadimplência', sub:'Receita prevista não recebida', v:V.inad, f:F.pct, trend: V.inad > (1 - P.taxaReceb) ? {up:true, bad:true, t:`acima de ${F.pct(1 - P.taxaReceb)}`} : null, ref:`${F.money(V.prev - V.receb)} em aberto`, tip:'(Valor previsto − valor recebido) ÷ valor previsto, na aba Receitas.', dec:'Acima de 3%: automatize lembretes de cobrança e priorize PIX ou cartão recorrente.'},
+  ]);
+
+  /* Gauge */
+  const meta = P.meta || 1;
+  draw('gauge', {
+    tooltip:{formatter: () => `Alunos ativos: <b>${F.int(at)}</b><br>Meta: ${F.int(meta)} · ${F.pct(at/meta)}<br>Faltam <b>${F.int(Math.max(0, meta - at))}</b> alunos`},
+    series:[{type:'gauge', startAngle:180, endAngle:0, min:0, max:meta, splitNumber:5, radius:'98%', center:['50%','68%'],
+      axisLine:{lineStyle:{width:18, color:[[.5,'#242428'],[.8,'#302F34'],[1,'#3E3C41']]}},
+      progress:{show:true, width:18, itemStyle:{color:C.r600}},
+      pointer:{length:'66%', width:5, itemStyle:{color:C.r500}},
+      anchor:{show:true, size:16, itemStyle:{color:C.r500, borderColor:C.surface, borderWidth:4}},
+      axisTick:{show:false}, splitLine:{distance:-18, length:18, lineStyle:{color:C.surface, width:3}},
+      axisLabel:{distance:26, color:C.muted, fontSize:10.5, formatter: v => F.int(v)},
+      title:{show:false},
+      detail:{offsetCenter:[0,'28%'], valueAnimation:false, formatter: () => `{v|${F.int(at)}}{u| / ${F.int(meta)}}\n{s|${F.pct(at/meta)} da meta}`, rich:{v:{fontFamily:'Sora', fontSize:30, fontWeight:600, color:C.text}, u:{fontSize:13, color:C.muted, padding:[8,0,0,0]}, s:{fontSize:11.5, color:C.muted, padding:[6,0,0,0]}}},
+      data:[{value: Math.min(at, meta), name:'Alunos ativos'}]}],
+  }, {aria:`Velocímetro: ${at} alunos ativos para uma meta de ${meta}`});
+
+  /* Linha resultado 12M */
+  const dre = B.dre, L = B.labels, lr = B.lastRealIdx;
+  const realS = dre.map(m => m.real ? m.res : null), projS = dre.map((m, i) => (!m.real || i === lr) ? m.res : null);
+  const negArea = dre.map(m => Math.min(0, m.res));
+  const nNeg = dre.filter(m => m.res < 0).length;
+  draw('result12', {
+    grid:{left:8, right:16, top:24, bottom:8, containLabel:true},
+    tooltip:{trigger:'axis', axisPointer:{type:'line', lineStyle:{color:'#3A3A3F'}}, formatter: ps => { const m = dre[ps[0].dataIndex]; return `<b>${m.label}</b> · ${m.real ? 'realizado' : 'projetado'}<br>Resultado: <b>${F.money(m.res)}</b><br><span style="color:${C.muted}">Receita líquida ${F.money(m.rl)} · Custos ${F.money(m.cv + m.cf)}</span>`; }},
+    xAxis:{type:'category', data:L, boundaryGap:false},
+    yAxis:{type:'value', axisLabel:{formatter:F.brlc}},
+    series:[
+      {name:'_area', type:'line', data:negArea, symbol:'none', lineStyle:{width:0}, areaStyle:{color:'rgba(166,58,64,.16)', origin:'auto'}, silent:true, z:1, tooltip:{show:false}},
+      {name:'Realizado', type:'line', data:realS, lineStyle:{color:C.r500, width:2.5}, itemStyle:{color:C.r500}, symbolSize:9, z:3,
+        markLine:{silent:true, symbol:'none', data:[{yAxis:0}, ...(periodIdx() >= 0 ? [{xAxis:periodIdx()}] : [])], lineStyle:{color:C.g500, type:'solid', width:1}, label:{show:false}}},
+      {name:'Projetado', type:'line', data:projS, lineStyle:{color:C.r400, width:2, type:'dashed'}, itemStyle:{color:C.r400}, symbolSize:6, z:2},
+    ],
+    legend:{top:0, right:0, data:['Realizado','Projetado']},
+  }, {aria:`Resultado operacional: negativo em ${nNeg} de 12 meses`});
+
+  /* Pizza modalidade */
+  pieOrBar('pieMod', groupSum(V.tur, t => t.modalidade, t => t.matriculados), {name:'Matrículas em turmas', fmt: v => `${F.int(v)} matrículas`, color: B.colors.modalidade, filter:'modalidade'});
+
+  renderAlerts(V);
+}
+
+function renderAlerts(V){
+  const P = DATA.prem, B = BASE, A = [];
+  const neg = B.dre.filter(m => m.res < 0).length, acc = sum(B.dre, 'res');
+  if (neg === 12) A.push({sev:'high', ic:'down', t:'Resultado operacional negativo em todos os 12 meses', s:`Déficit acumulado de ${F.brl0(Math.abs(acc))} no horizonte (realizado + projetado).`, a:'Use o simulador (Projeções) para testar mais alunos, reajuste de ticket e corte de custos.'});
+  else if (neg > 0) A.push({sev:'high', ic:'down', t:`Resultado operacional negativo em ${neg} de 12 meses`, s:`Resultado acumulado de ${F.brl0(acc)}.`, a:'Use o simulador (Projeções) para testar as alavancas de receita e custo.'});
+  const pctMeta = P.meta ? V.ativos.length / P.meta : 0;
+  A.push({sev: pctMeta < .5 ? 'high' : pctMeta < 1 ? 'mid' : 'info', ic:'target', t:`Base atual = ${F.pct(pctMeta)} da meta`, s:`${F.int(V.ativos.length)} de ${F.int(P.meta)} alunos ativos · faltam ${F.int(Math.max(0, P.meta - V.ativos.length))}.`, a:'Concentre a captação nos canais com maior taxa de conversão (página Comercial).'});
+  const low = V.tCap.filter(t => t.ocup < .5).sort((a, b) => a.ocup - b.ocup)[0];
+  if (low) A.push({sev:'mid', ic:'grid', t:`Turma ${low.codigo} com ocupação de ${F.pct0(low.ocup)}`, s:`${F.int(low.matriculados)} de ${F.int(low.capacidade)} vagas · ${low.modalidade} · ${low.dia} ${low.horario} · ${low.professor}.`, a:'Avalie juntar com outra turma, mudar o horário ou fazer uma campanha para a modalidade.'});
+  if (V.prev && V.inad > (1 - P.taxaReceb)) A.push({sev:'mid', ic:'wallet', t:`Inadimplência de ${F.pct(V.inad)}`, s:`${F.money(V.prev - V.receb)} em aberto — acima dos ${F.pct(1 - P.taxaReceb)} esperados pela premissa.`, a:'Acione os pendentes e ofereça PIX ou cartão recorrente.'});
+  if (V.ltvCac > 0 && V.ltvCac < 3) A.push({sev:'high', ic:'scale', t:`LTV/CAC abaixo de 3 (${F.x(V.ltvCac)})`, s:'A aquisição está cara frente à margem gerada por aluno.', a:'Corte os canais mais caros e invista em retenção.'});
+  const mods = groupMod(V.tur).filter(m => m.margem < 0).sort((a, b) => a.margem - b.margem);
+  if (mods.length) A.push({sev:'mid', ic:'down', t:`${mods[0].name} opera com margem negativa`, s:`${F.brl0(mods[0].margem)}/mês: custo das turmas maior que a receita potencial.`, a:'Revise o custo das turmas ou o preço da modalidade.'});
+  const sem = DATA.ocupacao.filter(o => o.capacidade <= 0);
+  if (sem.length) A.push({sev:'info', ic:'clock', t:`${sem.length} faixa${sem.length > 1 ? 's' : ''} horária${sem.length > 1 ? 's' : ''} sem turma`, s:`${sem.map(o => o.horario).join(', ')} — oportunidade de grade.`, a:'Teste novas turmas nesses horários para usar o espaço ocioso.'});
+  if (V.ltvCac >= 3) A.push({sev:'info', ic:'check', t:`LTV/CAC saudável: ${F.x(V.ltvCac)}`, s:'Cada R$ 1 em aquisição retorna mais de R$ 3 em margem.', a:'Há espaço para investir mais em captação de alunos.'});
+  const list = A.slice(0, 4), sevLabel = {high:'Crítico', mid:'Atenção', info:'Informativo'};
+  setBadge('alerts');
+  document.getElementById('hb-alerts').innerHTML = `<div class="alerts">${list.map(a => `<div class="alert ${a.sev}"><span class="al-ic">${icon(a.ic)}</span><div><div class="al-sev">${sevLabel[a.sev]}</div><div class="al-t">${esc(a.t)}</div><div class="al-s">${esc(a.s)}</div>${a.a ? `<div class="al-a">${esc(a.a)}</div>` : ''}</div></div>`).join('')}</div>`;
+}
+
+/* ---------- 7.2 Financeiro ---------- */
+function renderFinance(V){
+  const P = DATA.prem, B = BASE, f = state.filters;
+  const res = V.receb - V.despTot;
+  renderKpis('finance', [
+    {id:'prev', label:'Receita prevista', sub:'Faturamento esperado', v:V.prev, f:F.money, ref:`${F.int(V.rec.length)} lançamentos`, tip:'Soma de “Valor Previsto” na aba Receitas.', dec:'É a referência do mês: compare com o recebido para medir a eficiência da cobrança.'},
+    {id:'receb', label:'Receita recebida', sub:'Entrada de caixa', v:V.receb, f:F.money, ref:`${F.pct(V.prev ? V.receb/V.prev : 0)} do previsto`, tip:'Soma de “Valor Recebido” na aba Receitas.', dec:'Muito abaixo do previsto indica falha na cobrança: acione os pendentes e incentive o pagamento recorrente.'},
+    {id:'desp', label:'Despesas totais', sub:'Custos fixos + variáveis', v:V.despTot, f:F.money, ref:`${F.int(V.des.length)} lançamentos`, tip:'Soma de “Valor” na aba Despesas.', dec:'Veja as categorias que mais pesam (gráfico abaixo) e ataque as maiores primeiro.'},
+    {id:'res', label: f.periodo ? `Resultado · ${mlabel(f.periodo)}` : 'Resultado do período', sub:'Lucro ou prejuízo de caixa', v:res, f:F.money, neg: res < 0, trend: res < 0 ? {up:false, bad:true, t:'déficit'} : {up:true, bad:false, t:'superávit'}, tip:'Receita recebida − despesas totais (visão caixa, respeita os filtros).', dec:'Negativo: o caixa está sendo consumido. Aumente a receita (alunos, ticket) ou reduza custos fixos.'},
+    {id:'inad', label:'Inadimplência', sub:'Receita prevista não recebida', v:V.inad, f:F.pct, ref:`${F.money(V.prev - V.receb)} pendentes`, trend: V.inad > (1 - P.taxaReceb) ? {up:true, bad:true, t:`meta ${F.pct(1 - P.taxaReceb)}`} : null, tip:'(Previsto − recebido) ÷ previsto.', dec:'Acima de 3%: automatize lembretes de cobrança e priorize PIX ou cartão recorrente.'},
+  ]);
+
+  /* Waterfall: período (só filtro de período) */
+  const recP = DATA.receitas.filter(r => !f.periodo || r.mes === f.periodo), desP = DATA.despesas.filter(d => !f.periodo || d.mes === f.periodo);
+  document.getElementById('sub-waterfall').textContent = (f.periodo ? `${mlabel(f.periodo)} · ` : 'Acumulado de todos os meses · ') + 'valores realizados (Receitas e Despesas)';
+  if (!recP.length && !desP.length) draw('waterfall', {}, {empty:true});
+  else {
+    const rb = sum(recP, 'previsto'), inad = rb - sum(recP, 'recebido'), cv = sum(desP.filter(d => d.tipo === 'Variável'), 'valor'), cf = sum(desP.filter(d => d.tipo === 'Fixa'), 'valor');
+    const steps = [{n:'Receita bruta', k:'tot', v:rb}, {n:'(−) Inadimplência', k:'d', v:-inad}, {n:'(−) Custos variáveis', k:'d', v:-cv}, {n:'Margem de contribuição', k:'tot', v:rb - inad - cv}, {n:'(−) Custos fixos', k:'d', v:-cf}, {n:'Resultado operacional', k:'tot', v:rb - inad - cv - cf}];
+    let run = 0;
+    const data = steps.map((s, i) => { let lo, hi; if (s.k === 'tot'){ lo = 0; hi = s.v; run = s.v; } else { lo = run; hi = run + s.v; run = hi; } return [i, Math.min(lo, hi), Math.max(lo, hi), s.v, run]; });
+    const narrow = W('waterfall') < 520;
+    draw('waterfall', {
+      grid:{left:6, right:10, top:30, bottom:6, containLabel:true},
+      xAxis:{type:'category', data: steps.map(s => s.n), axisLabel:{interval:0, fontSize: narrow ? 9.5 : 11, width: narrow ? 52 : 86, overflow:'break', lineHeight:13}},
+      yAxis:{type:'value', axisLabel:{formatter:F.brlc}},
+      tooltip:{trigger:'item', formatter: p => `<b>${steps[p.data[0]].n}</b><br>${F.money(p.data[3])}${rb ? `<br><span style="color:${C.muted}">${F.pct(Math.abs(p.data[3]) / rb)} da receita bruta</span>` : ''}`},
+      series:[{type:'custom', encode:{x:0, y:[1,2]}, data, renderItem: (params, api) => {
+        const i = api.value(0), lo = api.value(1), hi = api.value(2), val = api.value(3), end = api.value(4), k = steps[i].k;
+        const a = api.coord([i, lo]), b = api.coord([i, hi]), bw = api.size([1, 0])[0] * .56;
+        const x = a[0] - bw/2, y = Math.min(a[1], b[1]), h = Math.max(2, Math.abs(a[1] - b[1]));
+        const fill = k === 'tot' ? (val >= 0 ? C.g300 : C.r500) : C.r700;
+        const ch = [{type:'rect', shape:{x, y, width:bw, height:h, r:3}, style:{fill, stroke: k === 'd' ? C.r500 : null, lineWidth:1}},
+          {type:'text', style:{text:F.brlc(val), x:a[0], y:y - 6, align:'center', verticalAlign:'bottom', fill:C.text, font:`600 ${narrow ? 10 : 11}px Inter, sans-serif`}}];
+        if (i < steps.length - 1){ const yE = api.coord([i, end])[1], nx = api.coord([i + 1, end])[0]; ch.push({type:'line', shape:{x1:x + bw, y1:yE, x2:nx - bw/2, y2:yE}, style:{stroke:C.dim, lineDash:[3,3], lineWidth:1}}); }
+        return {type:'group', children:ch};
+      }}],
+    }, {aria:`Cascata da DRE: resultado operacional de ${F.money(steps[5].v)}`});
+  }
+
+  /* Combo 12M */
+  const dre = B.dre, lr = B.lastRealIdx, peR = V.peR;
+  draw('combo12', {
+    grid:{left:8, right:12, top:36, bottom:8, containLabel:true},
+    legend:{top:0, left:0, data:['Receita líquida','Custos totais','Ponto de equilíbrio']},
+    tooltip: axisTip(F.money),
+    xAxis:{type:'category', data:B.labels},
+    yAxis:{type:'value', axisLabel:{formatter:F.brlc}},
+    series:[
+      {name:'Receita líquida', type:'bar', barMaxWidth:26, itemStyle:{color:C.r500}, data: dre.map((m, i) => ({value:m.rl, itemStyle:{color: m.real ? C.r500 : 'rgba(166,58,64,.42)', opacity: dim(i), borderRadius:[4,4,0,0]}}))},
+      {name:'Custos totais', type:'line', data: dre.map(m => m.real ? m.cv + m.cf : null), itemStyle:{color:C.g300}, lineStyle:{color:C.g300}},
+      {name:'Custos totais', type:'line', data: dre.map((m, i) => (!m.real || i === lr) ? m.cv + m.cf : null), itemStyle:{color:C.g300}, lineStyle:{color:C.g300, type:'dashed'}, symbolSize:5},
+      {name:'Ponto de equilíbrio', type:'line', data: dre.map(() => peR), symbol:'none', itemStyle:{color:C.r300}, lineStyle:{color:C.r300, type:[6,4], width:1.5}},
+    ],
+  });
+
+  /* Barras: despesas por categoria */
+  const cats = groupSum(V.des, d => d.categoria, d => d.valor).filter(c => c.value > 0).sort((a, b) => b.value - a.value);
+  draw('catBar', cats.length ? hbarOption(cats, {fmt:F.brl0}) : {}, {empty: !cats.length});
+
+  pieOrBar('centroPie', groupSum(V.des, d => d.centro, d => d.valor), {name:'Despesas por centro de custo', fmt:F.brl0, color:B.colors.centro, filter:'centro'});
+
+  const fv = groupSum(V.des, d => d.tipo, d => d.valor).filter(x => x.value > 0).sort((a, b) => a.name.localeCompare(b.name));
+  draw('fixVar', fv.length ? pieOption('fixVar', fv, {name:'Fixas × variáveis', fmt:F.brl0, color:B.colors.fixvar, donut:true, centerText:[F.brlc(V.despTot), 'total']}) : {}, {empty: !fv.length});
+
+  pieOrBar('formaPie', groupSum(V.rec, r => r.forma, r => r.previsto), {name:'Receita por forma de pagamento', fmt:F.money, color:B.colors.forma, filter:'forma'});
+
+  /* Área: saldo acumulado */
+  const cx = B.caixa;
+  draw('cash', {
+    grid:{left:8, right:16, top:30, bottom:8, containLabel:true},
+    legend:{top:0, left:0, data:['Realizado','Projetado']},
+    tooltip:{trigger:'axis', axisPointer:{type:'line', lineStyle:{color:'#3A3A3F'}}, formatter: ps => { const i = ps[0].dataIndex, c = cx[i]; return `<b>${B.labels[i]}</b> · ${c.real ? 'realizado' : 'projetado'}<br>Saldo final: <b>${F.money(c.fim)}</b><br><span style="color:${C.muted}">Entradas ${F.money(c.ent)} · Saídas ${F.money(c.sai)}</span>`; }},
+    xAxis:{type:'category', data:B.labels, boundaryGap:false},
+    yAxis:{type:'value', axisLabel:{formatter:F.brlc}},
+    series:[
+      {name:'Realizado', type:'line', data: cx.map(c => c.real ? c.fim : null), itemStyle:{color:C.r500}, lineStyle:{color:C.r500, width:2.5}, areaStyle:{color:gradient(.35), origin:'auto'}, ...pLine()},
+      {name:'Projetado', type:'line', data: cx.map((c, i) => (!c.real || i === lr) ? c.fim : null), itemStyle:{color:C.r400}, lineStyle:{color:C.r400, type:'dashed'}, symbolSize:5, areaStyle:{color:gradient(.22), origin:'auto'}},
+    ],
+  });
+
+  renderDreTable();
+}
+
+function renderDreTable(){
+  const B = BASE, dre = B.dre, p = periodIdx();
+  const rows = [['Receita bruta','rb',''],['(−) Inadimplência','inad','ded'],['Receita líquida','rl','tot'],['(−) Custos variáveis','cv','ded'],['Margem de contribuição','mc','tot'],['(−) Custos fixos','cf','ded'],['Resultado operacional','res','res'],['Margem operacional','mop','pct']];
+  const tot = k => sum(dre, k);
+  const cell = (v, k, cls) => { const neg = (k === 'res' || k === 'mc' || k === 'mop') && v < 0; return `<td class="n${cls}${neg ? ' neg' : ''}">${k === 'mop' ? F.pct(v) : F.brl0(v)}</td>`; };
+  setBadge('dreTable');
+  document.getElementById('hb-dreTable').innerHTML = `<div class="tbl-wrap"><table class="t dre"><thead><tr><th>Linha da DRE</th>${dre.map((m, i) => `<th class="n${m.real ? '' : ' proj'}"${p === i ? ` style="color:${C.r200}"` : ''}>${m.label}<span class="ph">${m.real ? 'REALIZADO' : 'PROJETADO'}</span></th>`).join('')}<th class="n">Total 12M<span class="ph">&nbsp;</span></th></tr></thead>
+  <tbody>${rows.map(([n, k, c]) => `<tr class="${c}"><td>${n}</td>${dre.map(m => cell(m[k], k, m.real ? '' : ' proj')).join('')}${cell(k === 'mop' ? (tot('rl') ? tot('res') / tot('rl') : 0) : tot(k), k, '')}</tr>`).join('')}</tbody></table></div>`;
+}
+
+/* ---------- 7.3 Alunos & Retenção ---------- */
+function daysSince(a){ const ref = a.status === 'Cancelado' && a.cancelamento ? a.cancelamento : new Date(); return a.matricula ? Math.max(0, Math.round((ref - a.matricula) / 86400000)) : null; }
+function renderStudents(V){
+  const B = BASE, ativos = V.ativos;
+  const tempo = avg(ativos.map(daysSince).filter(d => d != null));
+  renderKpis('students', [
+    {id:'base', label:'Base ativa', sub:'Alunos com matrícula ativa', v:ativos.length, f:F.int, ref:`${F.int(V.al.length)} alunos no filtro`, tip:'Alunos com Status = Ativo.', dec:'É o motor da receita recorrente (MRR): acompanhe junto com a meta de alunos.'},
+    {id:'canc', label:'Cancelamentos', sub:'Alunos que saíram', v:V.canc.length, f:F.int, ref: V.canc.length ? `último em ${F.date(V.canc.map(a => a.cancelamento).filter(Boolean).sort((a, b) => b - a)[0])}` : 'nenhum cancelamento', tip:'Alunos com Status = Cancelado no filtro atual.', dec:'Investigue os motivos (horário, preço, atendimento) e crie uma ação de reconquista.'},
+    {id:'churn', label:'Churn Rate', sub:'Taxa de cancelamento', v:V.churnReal, f:F.pct, trend: V.churnReal > DATA.prem.churn ? {up:true, bad:true, t:`premissa ${F.pct(DATA.prem.churn)}`} : null, tip:'Cancelados ÷ (ativos + cancelados).', dec:'Se subir, contate os alunos com baixa frequência e reforce o acompanhamento nos primeiros 60 dias.'},
+    {id:'ret', label:'Retention Rate', sub:'Taxa de retenção', v:(V.al.length ? 1 - V.churnReal : 0), f:F.pct, ref:'1 − churn rate', tip:'Percentual de alunos que permanecem: 1 − churn rate.', dec:'Quanto maior, maior o LTV. Acompanhamento de treino e metas pessoais aumentam a permanência.'},
+    {id:'tempo', label:'Tempo médio de casa', sub:'Permanência média dos ativos', v:tempo, f: v => `${F.int(v)} dias`, ref:'desde a matrícula', tip:'Média de dias entre a data de matrícula e hoje, considerando somente alunos ativos.', dec:'Os primeiros meses são os mais críticos: reforce o contato com quem tem menos de 60 dias de casa.'},
+  ]);
+
+  const ch = B.churn12;
+  if (!ch.length){ draw('churnLines', {}, {empty:true}); draw('movStack', {}, {empty:true}); }
+  else {
+    const L = ch.map(c => c.label);
+    const churnMax = Math.max(...ch.map(c => c.churn)), retMin = Math.min(...ch.map(c => c.ret));
+    draw('churnLines', {
+      grid:{left:8, right:8, top:44, bottom:8, containLabel:true},
+      legend:{top:0, left:0, data:['Churn %','Retenção %']},
+      tooltip: axisTip(F.pct),
+      xAxis:{type:'category', data:L, boundaryGap:false},
+      yAxis:[{type:'value', name:'Churn', min:0, max: Math.max(.01, Math.ceil(churnMax * 1.6 * 100) / 100), axisLabel:{formatter: v => F.pct0(v)}, nameTextStyle:{align:'left'}},
+             {type:'value', name:'Retenção', min: Math.max(0, Math.floor((retMin - .02) * 100) / 100), max:1, axisLabel:{formatter: v => F.pct0(v)}, splitLine:{show:false}, nameTextStyle:{align:'right'}}],
+      series:[
+        {name:'Churn %', type:'line', yAxisIndex:0, data: ch.map(c => c.churn), itemStyle:{color:C.r500}, lineStyle:{color:C.r500, width:2.5}, ...pLine()},
+        {name:'Retenção %', type:'line', yAxisIndex:1, data: ch.map(c => c.ret), itemStyle:{color:C.g300}, lineStyle:{color:C.g300, width:2}, symbol:'emptyCircle'},
+      ],
+    });
+    draw('movStack', {
+      grid:{left:8, right:8, top:44, bottom:8, containLabel:true},
+      legend:{top:0, left:0, data:['Novos alunos','Cancelamentos','Base final']},
+      tooltip: axisTip(F.int),
+      xAxis:{type:'category', data:L},
+      yAxis:[{type:'value', name:'Movimentação', axisLabel:{formatter:F.int}, nameTextStyle:{align:'left'}},
+             {type:'value', name:'Base', axisLabel:{formatter:F.int}, splitLine:{show:false}, scale:true, nameTextStyle:{align:'right'}}],
+      series:[
+        {name:'Novos alunos', type:'bar', stack:'mov', barMaxWidth:26, data: ch.map((c, i) => ({value:c.novos, itemStyle:{opacity:dim(i)}})), itemStyle:{color:C.g300, borderColor:C.surface, borderWidth:1, borderRadius:0}},
+        {name:'Cancelamentos', type:'bar', stack:'mov', barMaxWidth:26, data: ch.map((c, i) => ({value:c.cancel, itemStyle:{opacity:dim(i)}})), itemStyle:{color:C.r500, borderColor:C.surface, borderWidth:1, borderRadius:[4,4,0,0]}},
+        {name:'Base final', type:'line', yAxisIndex:1, data: ch.map(c => c.fim), itemStyle:{color:C.r300}, lineStyle:{color:C.r300, width:2}},
+      ],
+    });
+  }
+
+  pieOrBar('planoPie', groupSum(V.al, a => a.plano), {name:'Alunos por plano', fmt: v => `${F.int(v)} aluno${v === 1 ? '' : 's'}`, color:B.colors.plano, filter:'plano'});
+
+  const origs = uniq(V.al.map(a => a.origem));
+  const stats = ['Ativo','Cancelado'].filter(s => V.al.some(a => a.status === s));
+  draw('origemStatus', origs.length ? {
+    grid:{left:8, right:8, top:36, bottom:8, containLabel:true},
+    legend:{top:0, left:0},
+    tooltip: axisTip(F.int),
+    xAxis:{type:'category', data:origs},
+    yAxis:{type:'value', minInterval:1},
+    series: stats.map(s => ({name:s, type:'bar', barMaxWidth:30, barGap:'12%', itemStyle:{color:B.colors.status(s)}, label:{show:true, position:'top', color:C.text, fontSize:11, formatter: p => p.value || ''}, data: origs.map(o => V.al.filter(a => a.origem === o && a.status === s).length)})),
+  } : {}, {empty: !origs.length, onClick: p => toggleFilter('origem', p.name)});
+
+  renderAlunosTable(V);
+}
+
+const TBL = {q:'', sort:'id', dir:1, page:0};
+const AL_COLS = [['id','ID','n'],['nome','Nome',''],['modalidade','Modalidade',''],['plano','Plano',''],['matricula','Matrícula',''],['mensalidade','Mensalidade','n'],['status','Status',''],['origem','Origem',''],['dias','Dias de casa','n']];
+let lastV = null;
+function renderAlunosTable(V){
+  if (V) lastV = V; V = lastV;
+  setBadge('alunosTable');
+  const body = document.getElementById('hb-alunosTable');
+  if (!body.dataset.init){
+    body.dataset.init = '1';
+    body.innerHTML = `<div class="tbl-tools"><label class="search">${icon('search')}<input type="search" id="alSearch" placeholder="Buscar aluno por nome…" aria-label="Buscar aluno por nome" autocomplete="off"></label><span class="tbl-count" id="alCount"></span></div><div class="tbl-wrap"><table class="t" id="alTable"><thead></thead><tbody></tbody></table></div><div class="pager" id="alPager"></div>`;
+    body.querySelector('#alSearch').addEventListener('input', e => { TBL.q = e.target.value; TBL.page = 0; renderAlunosTable(); });
+    body.querySelector('thead').addEventListener('click', e => { const b = e.target.closest('button[data-s]'); if (!b) return; const s = b.dataset.s; TBL.dir = TBL.sort === s ? -TBL.dir : 1; TBL.sort = s; renderAlunosTable(); });
+    body.querySelector('#alPager').addEventListener('click', e => { const b = e.target.closest('button[data-p]'); if (b){ TBL.page = +b.dataset.p; renderAlunosTable(); } });
+  }
+  const q = norm(TBL.q);
+  let rows = V.al.map(a => ({...a, dias: daysSince(a)})).filter(a => !q || norm(a.nome).includes(q));
+  const k = TBL.sort;
+  rows.sort((a, b) => { const x = a[k], y = b[k]; if (x == null) return 1; if (y == null) return -1; return (x instanceof Date ? x - y : typeof x === 'number' ? x - y : String(x).localeCompare(String(y), 'pt-BR', {numeric:true})) * TBL.dir; });
+  const pages = Math.max(1, Math.ceil(rows.length / 10)); TBL.page = Math.min(TBL.page, pages - 1);
+  const slice = rows.slice(TBL.page * 10, TBL.page * 10 + 10);
+  body.querySelector('thead').innerHTML = `<tr>${AL_COLS.map(([c, l, n]) => `<th class="${n}" aria-sort="${TBL.sort === c ? (TBL.dir > 0 ? 'ascending' : 'descending') : 'none'}"><button type="button" data-s="${c}">${l}<span class="s">${TBL.sort === c ? (TBL.dir > 0 ? '▲' : '▼') : ''}</span></button></th>`).join('')}</tr>`;
+  body.querySelector('tbody').innerHTML = slice.length ? slice.map(a => `<tr><td class="n muted">${esc(a.id)}</td><td>${esc(a.nome)}</td><td>${esc(a.modalidade)}</td><td>${esc(a.plano)}</td><td>${F.date(a.matricula)}</td><td class="n">${F.brl(a.mensalidade)}</td><td><span class="badge ${a.status === 'Ativo' ? 'ativo' : 'cancelado'}">${a.status === 'Ativo' ? '● ' : '✕ '}${esc(a.status)}</span></td><td>${esc(a.origem)}</td><td class="n">${a.dias == null ? '—' : F.int(a.dias)}</td></tr>`).join('')
+    : `<tr><td colspan="${AL_COLS.length}" style="text-align:center;padding:28px" class="muted">Sem dados para os filtros selecionados</td></tr>`;
+  body.querySelector('#alCount').textContent = rows.length ? `Mostrando ${TBL.page * 10 + 1}–${TBL.page * 10 + slice.length} de ${rows.length}` : '0 alunos';
+  const pg = body.querySelector('#alPager');
+  pg.innerHTML = pages > 1 ? `<button type="button" data-p="${TBL.page - 1}" ${TBL.page === 0 ? 'disabled' : ''} aria-label="Página anterior">‹</button>${Array.from({length:pages}, (_, i) => `<button type="button" data-p="${i}" aria-current="${i === TBL.page}">${i + 1}</button>`).join('')}<button type="button" data-p="${TBL.page + 1}" ${TBL.page >= pages - 1 ? 'disabled' : ''} aria-label="Próxima página">›</button>` : '';
+}
+
+/* ---------- 7.4 Comercial ---------- */
+function renderSales(V){
+  const B = BASE, L = V.leads;
+  const exp = L.filter(l => l.experimental).length, comp = L.filter(l => l.experimental && l.compareceu).length, mat = L.filter(l => l.matriculou).length;
+  renderKpis('sales', [
+    {id:'leads', label:'Leads', sub:'Interessados captados', v:L.length, f:F.int, ref:`${uniq(L.map(l => l.origem)).length} origens`, tip:'Total de linhas na aba Leads (respeita os filtros).', dec:'Volume baixo: reforce os canais com melhor conversão antes de abrir canais novos.'},
+    {id:'exp', label:'Aulas experimentais', sub:'Leads que agendaram', v:exp, f:F.int, ref:`${F.pct(L.length ? exp/L.length : 0)} dos leads`, tip:'Leads com Experimental = Sim.', dec:'Ofereça a aula experimental em todo contato: ela é a porta de entrada da matrícula.'},
+    {id:'comp', label:'Show Rate', sub:'Taxa de comparecimento', v: exp ? comp/exp : 0, f:F.pct, ref:`${F.int(comp)} de ${F.int(exp)}`, tip:'Compareceram ÷ agendaram aula experimental.', dec:'Baixa: confirme a aula por WhatsApp na véspera e no dia.'},
+    {id:'conv', label:'Conversion Rate', sub:'Taxa de conversão', v: L.length ? mat/L.length : 0, f:F.pct, ref:`${F.int(mat)} matrículas`, tip:'Leads matriculados ÷ total de leads.', dec:'Baixa: revise a abordagem depois da aula e ofereça uma condição para matrícula no mesmo dia.'},
+    {id:'cac', label:'CAC', sub:'Custo de aquisição por aluno', v:V.cacReal, f:F.brl, ref:`premissa ${F.brl(DATA.prem.cac)}`, trend: V.cacReal != null && V.cacReal > DATA.prem.cac ? {up:true, bad:true, t:'acima'} : null, tip:'Soma do CAC dos leads ÷ leads matriculados.', dec:'CAC alto: corte os canais caros e concentre o investimento nos que mais convertem.'},
+    {id:'ltvcac', label:'LTV/CAC', sub:'Retorno do custo de aquisição', v:V.ltvCac, f:F.x, trend: V.ltvCac >= 3 ? {up:true, bad:false, t:'saudável'} : {up:false, bad:true, t:'abaixo de 3x'}, tip:'LTV ÷ CAC. Referência saudável: 3x ou mais.', dec:'Abaixo de 3x, a aquisição está cara. Acima de 5x, há espaço para investir mais em marketing.'},
+  ]);
+  if (!L.length){ ['funnel','leadOrigem','origemConv','convMod'].forEach(id => draw(id, {}, {empty:true})); renderPerdas(V); return; }
+
+  const st = [['Leads', L.length, C.g500], ['Fizeram experimental', exp, C.r700], ['Compareceram', comp, C.r600], ['Matricularam', mat, C.r500]];
+  const narrow = W('funnel') < 480;
+  draw('funnel', {
+    tooltip:{trigger:'item', formatter: p => { const i = p.dataIndex; return `<b>${p.name}</b>: ${F.int(p.value)}${i ? `<br>${F.pct(st[i-1][1] ? p.value / st[i-1][1] : 0)} da etapa anterior` : ''}<br>${F.pct(L.length ? p.value / L.length : 0)} do total de leads`; }},
+    series:[{type:'funnel', sort:'none', left: '2%', width: narrow ? '50%' : '54%', top:8, bottom:8, minSize:'22%', gap:4, max: L.length,
+      itemStyle:{borderColor:C.surface, borderWidth:2},
+      label:{show:true, position:'right', formatter: p => { const i = p.dataIndex; return `{n|${p.name}}\n{v|${F.int(p.value)}}${i ? `  {p|${F.pct0(st[i-1][1] ? p.value / st[i-1][1] : 0)} da etapa anterior}` : ''}`; },
+        rich:{n:{color:C.muted, fontSize:11.5, lineHeight:18}, v:{color:C.text, fontFamily:'Sora', fontSize:17, fontWeight:600}, p:{color:C.r300, fontSize:11}}},
+      labelLine:{length:12, lineStyle:{color:C.dim}},
+      data: st.map(([n, v, c]) => ({name:n, value:v, itemStyle:{color:c}}))}],
+  }, {aria:`Funil: ${st.map(s => `${s[0]} ${s[1]}`).join(', ')}`});
+
+  pieOrBar('leadOrigem', groupSum(L, l => l.origem), {name:'Leads por origem', fmt: v => `${F.int(v)} lead${v === 1 ? '' : 's'}`, color:B.colors.origem, filter:'origem'});
+
+  const og = uniq(L.map(l => l.origem));
+  const conv = og.map(o => { const ls = L.filter(l => l.origem === o); return {o, n: ls.length, m: ls.filter(l => l.matriculou).length}; });
+  draw('origemConv', {
+    grid:{left:8, right:8, top:52, bottom:8, containLabel:true},
+    legend:{top:0, left:0},
+    tooltip:{trigger:'axis', axisPointer:{type:'shadow', shadowStyle:{color:'rgba(255,255,255,.03)'}}, formatter: ps => { const c = conv[ps[0].dataIndex]; return `<b>${esc(c.o)}</b><br>Leads: <b>${c.n}</b><br>Matrículas: <b>${c.m}</b><br>Conversão: <b>${F.pct(c.n ? c.m/c.n : 0)}</b>`; }},
+    xAxis:{type:'category', data:og},
+    yAxis:{type:'value', minInterval:1},
+    series:[
+      {name:'Leads', type:'bar', barMaxWidth:28, barGap:'10%', itemStyle:{color:C.g500}, data: conv.map(c => c.n),
+        label:{show:true, position:'top', distance:6, formatter: p => `{c|${F.pct0(conv[p.dataIndex].n ? conv[p.dataIndex].m / conv[p.dataIndex].n : 0)}}\n{l|conv.}`, rich:{c:{color:C.text, fontWeight:600, fontSize:12, align:'center'}, l:{color:C.muted, fontSize:10, align:'center'}}}},
+      {name:'Matrículas', type:'bar', barMaxWidth:28, itemStyle:{color:C.r500}, data: conv.map(c => c.m)},
+    ],
+  }, {onClick: p => toggleFilter('origem', p.name)});
+
+  const cm = uniq(L.map(l => l.interesse)).map(m => { const ls = L.filter(l => l.interesse === m); return {name:m, n:ls.length, m:ls.filter(l => l.matriculou).length, value: ls.filter(l => l.matriculou).length / ls.length}; }).sort((a, b) => b.value - a.value || b.n - a.n);
+  const cmo = hbarOption(cm, {fmt:F.pct, labelFmt: p => `${F.pct0(p.value)}  {m|${cm[p.dataIndex].m}/${cm[p.dataIndex].n}}`, tip: p => `<b>${esc(p.name)}</b><br>Conversão: <b>${F.pct(p.value)}</b><br>${cm[p.dataIndex].m} matrícula(s) de ${cm[p.dataIndex].n} lead(s)`});
+  cmo.xAxis.max = 1; cmo.grid.right = 80;
+  draw('convMod', cmo, {onClick: p => toggleFilter('modalidade', p.name)});
+
+  renderPerdas(V);
+}
+function renderPerdas(V){
+  setBadge('perdas');
+  const lost = V.leads.filter(l => !l.matriculou), g = groupSum(lost, l => l.status).sort((a, b) => b.value - a.value), mx = Math.max(1, ...g.map(x => x.value));
+  document.getElementById('hb-perdas').innerHTML = lost.length ? `<div class="loss-total"><b>${F.int(lost.length)}</b>lead${lost.length > 1 ? 's' : ''} perdido${lost.length > 1 ? 's' : ''} · ${F.pct(V.leads.length ? lost.length / V.leads.length : 0)} do total</div>` +
+    g.map(x => `<div class="lossrow"><span class="lt">${esc(x.name)}</span><span class="lv">${F.int(x.value)} <span class="muted" style="font:500 11px var(--f-body)">· ${F.pct0(x.value / lost.length)}</span></span><div class="bar" role="img" aria-label="${esc(x.name)}: ${x.value}"><i style="width:${x.value / mx * 100}%"></i></div></div>`).join('')
+    : `<div class="empty" style="height:200px">${icon('check')}<span>${V.leads.length ? 'Nenhum lead perdido no filtro' : 'Sem dados para os filtros selecionados'}</span></div>`;
+}
+
+/* ---------- Notas fiscais ---------- */
+const NF_TBL = {q:'', tipo:null, page:0};
+function nfConciliacao(V){
+  const des = DATA.despesas.filter(d => !state.filters.periodo || d.mes === state.filters.periodo);
+  const ent = V.nf.filter(n => n.tipo === 'Entrada' && n.status === 'Válida');
+  const cats = uniq([...des.map(d => d.categoria), ...ent.map(n => n.categoria)]);
+  const linhas = cats.map(c => { const d = sum(des.filter(x => x.categoria === c), 'valor'), n = sum(ent.filter(x => x.categoria === c), 'valor'); return {c, d, n, sem: Math.max(0, d - n)}; })
+    .sort((a, b) => b.d - a.d || b.n - a.n);
+  const totalDes = sum(des, 'valor'), coberto = sum(linhas, l => Math.min(l.d, l.n));
+  return {linhas, totalDes, coberto, sem: totalDes - coberto};
+}
+function renderNF(V){
+  const val = V.nf.filter(n => n.status === 'Válida'), canc = V.nf.length - val.length;
+  const ent = sum(val.filter(n => n.tipo === 'Entrada'), 'valor'), sai = sum(val.filter(n => n.tipo === 'Saída'), 'valor');
+  const cj = nfConciliacao(V), cob = cj.totalDes ? cj.coberto / cj.totalDes : 0;
+  renderKpis('nf', [
+    {id:'qtd', label:'Notas no período', sub:'Notas fiscais válidas', v:val.length, f:F.int, ref: canc ? `${F.int(canc)} cancelada${canc > 1 ? 's' : ''}` : 'nenhuma cancelada', tip:'Quantidade de notas com status Válida no período filtrado.', dec:'Confira se toda compra e todo serviço contratado gerou nota: é a base da contabilidade e da comprovação de gastos.'},
+    {id:'ent', label:'Notas de entrada', sub:'Compras e serviços recebidos', v:ent, f:F.money, ref: nfQtd(val.filter(n => n.tipo === 'Entrada').length), tip:'Soma do valor das notas de entrada válidas (emitidas por fornecedores para a academia).', dec:'Compare com as despesas: a diferença é o que foi pago sem nota.'},
+    {id:'sai', label:'Notas de saída', sub:'Emitidas pela academia', v:sai, f:F.money, ref: nfQtd(val.filter(n => n.tipo === 'Saída').length), tip:'Soma do valor das notas emitidas pela academia (serviços e venda de produtos).', dec:'Confronte com a receita recebida para conferir se as vendas estão sendo faturadas.'},
+    {id:'cob', label:'Cobertura fiscal', sub:'Despesas com nota fiscal', v:cob, f:F.pct, trend: cj.totalDes ? (cob >= .8 ? {up:true, bad:false, t:'boa'} : {up:false, bad:true, t:'abaixo de 80%'}) : null, ref:`${F.money(cj.coberto)} de ${F.money(cj.totalDes)}`, tip:'Parte das despesas do período que tem nota de entrada na mesma categoria.', dec:'Cobre nota dos fornecedores que faltam. Folha de pagamento e aluguel costumam ter outros comprovantes (holerite, recibo).'},
+    {id:'sem', label:'Despesas sem nota', sub:'Valor pago sem nota fiscal', v:cj.sem, f:F.money, neg: cj.sem > 0, ref:'veja a conciliação por categoria', tip:'Despesas do período − valor coberto por notas de entrada, categoria a categoria.', dec:'Priorize as categorias com maior valor sem nota no gráfico de conciliação.'},
+  ]);
+
+  /* Entradas × saídas por mês (todas as notas válidas; o mês filtrado fica em destaque) */
+  const todas = DATA.notas.filter(n => n.status === 'Válida');
+  const meses = uniq(todas.map(n => n.mes)).sort();
+  const destaque = k => !state.filters.periodo || state.filters.periodo === k ? 1 : .35;
+  draw('nfMes', meses.length ? {
+    grid:{left:8, right:8, top:36, bottom:8, containLabel:true},
+    legend:{top:0, left:0},
+    tooltip: axisTip(F.money),
+    xAxis:{type:'category', data: meses.map(mlabel)},
+    yAxis:{type:'value', axisLabel:{formatter:F.brlc}},
+    series: [['Entrada', 'Entradas', C.r500], ['Saída', 'Saídas', C.g300]].map(([t, nome, cor]) => ({name:nome, type:'bar', barMaxWidth:26, barGap:'12%', itemStyle:{color:cor},
+      data: meses.map(k => ({value: sum(todas.filter(n => n.mes === k && n.tipo === t), 'valor'), itemStyle:{opacity: destaque(k)}})),
+      label:{show: meses.length <= 6, position:'top', color:C.text, fontSize:10.5, formatter: p => p.value ? F.brlc(p.value) : ''}})),
+  } : {}, {empty: !meses.length});
+
+  /* Conciliação por categoria */
+  const L = cj.linhas.filter(l => l.d || l.n);
+  draw('nfConc', L.length ? {
+    grid:{left:6, right:16, top:36, bottom:6, containLabel:true},
+    legend:{top:0, left:0},
+    tooltip:{trigger:'axis', axisPointer:{type:'shadow', shadowStyle:{color:'rgba(255,255,255,.03)'}}, formatter: ps => { const l = L[ps[0].dataIndex]; return `<b>${esc(l.c)}</b><br>Despesas: <b>${F.money(l.d)}</b><br>Notas de entrada: <b>${F.money(l.n)}</b><br>${l.sem > 0 ? `<span style="color:${C.r300}">Sem nota: ${F.money(l.sem)}</span>` : 'Coberto por notas'}`; }},
+    xAxis:{type:'value', axisLabel:{formatter:F.brlc, fontSize:10}},
+    yAxis:{type:'category', inverse:true, data: L.map(l => l.c), axisLabel:{color:C.text, fontSize:11.5}},
+    series:[
+      {name:'Despesas', type:'bar', barMaxWidth:12, barGap:'20%', itemStyle:{color:C.g500, borderRadius:[0,4,4,0]}, data: L.map(l => l.d)},
+      {name:'Notas de entrada', type:'bar', barMaxWidth:12, itemStyle:{color:C.r500, borderRadius:[0,4,4,0]}, data: L.map(l => l.n),
+        label:{show:true, position:'right', fontSize:10.5, formatter: p => { const l = L[p.dataIndex]; return l.sem > 0 ? `{s|sem nota ${F.brlc(l.sem)}}` : (l.n ? '{o|✓ coberto}' : ''); }, rich:{s:{color:C.r300}, o:{color:C.g300}}}},
+    ],
+  } : {}, {empty: !L.length});
+
+  renderNFTable(V);
+}
+function renderNFTable(V){
+  if (V) NF_TBL.V = V; V = NF_TBL.V;
+  setBadge('nfTable');
+  const body = document.getElementById('hb-nfTable');
+  if (!body.dataset.init){
+    body.dataset.init = '1';
+    body.innerHTML = `<div class="tbl-tools">
+        <div class="nf-tools-l"><label class="search">${icon('search')}<input type="search" id="nfSearch" placeholder="Buscar por número, fornecedor ou descrição…" aria-label="Buscar notas" autocomplete="off"></label>
+        <div class="seg" role="group" aria-label="Tipo de nota"><button type="button" data-t="" aria-pressed="true">Todas</button><button type="button" data-t="Entrada" aria-pressed="false">Entradas</button><button type="button" data-t="Saída" aria-pressed="false">Saídas</button></div></div>
+        <div class="nf-tools-r"><button class="btn btn-ghost" type="button" id="nfExport">${icon('download')}<span>Baixar planilha com as notas</span></button><button class="btn" type="button" id="nfAdd">${icon('plus')}<span>Adicionar nota</span></button></div>
+      </div>
+      <div class="tbl-wrap"><table class="t" id="nfTbl"><thead><tr><th>Emissão</th><th>Número / série</th><th>Tipo</th><th>Emitente / destinatário</th><th>Descrição</th><th>Categoria</th><th class="n">Valor</th><th>Status</th><th>Chave de acesso</th><th><span class="sr">Ações</span></th></tr></thead><tbody></tbody></table></div>
+      <div class="nf-foot"><span class="tbl-count" id="nfCount"></span><span class="nf-note">Notas adicionadas aqui ficam salvas neste navegador. Para guardar ou enviar à contabilidade, use “Baixar planilha com as notas”.</span></div>
+      <div class="pager" id="nfPager"></div>`;
+    body.querySelector('#nfSearch').addEventListener('input', e => { NF_TBL.q = e.target.value; NF_TBL.page = 0; renderNFTable(); });
+    body.querySelector('.seg').addEventListener('click', e => { const b = e.target.closest('button[data-t]'); if (!b) return; NF_TBL.tipo = b.dataset.t || null; NF_TBL.page = 0;
+      body.querySelectorAll('.seg button').forEach(x => x.setAttribute('aria-pressed', x === b)); renderNFTable(); });
+    body.querySelector('#nfAdd').addEventListener('click', () => nfAbrirDialogo());
+    body.querySelector('#nfExport').addEventListener('click', nfExportar);
+    body.querySelector('tbody').addEventListener('click', e => { const b = e.target.closest('button[data-del]'); if (b) nfExcluir(b.dataset.del); });
+    body.querySelector('#nfPager').addEventListener('click', e => { const b = e.target.closest('button[data-p]'); if (b){ NF_TBL.page = +b.dataset.p; renderNFTable(); } });
+  }
+  const q = norm(NF_TBL.q);
+  const rows = V.nf.filter(n => (!NF_TBL.tipo || n.tipo === NF_TBL.tipo) && (!q || norm([n.numero, n.serie, n.parceiro, n.doc, n.descricao, n.categoria, n.chave].join(' ')).includes(q)))
+    .sort((a, b) => (b.data || 0) - (a.data || 0));
+  const pages = Math.max(1, Math.ceil(rows.length / 10)); NF_TBL.page = Math.min(NF_TBL.page, pages - 1);
+  const slice = rows.slice(NF_TBL.page * 10, NF_TBL.page * 10 + 10);
+  body.querySelector('tbody').innerHTML = slice.length ? slice.map(n => `<tr${n.status === 'Cancelada' ? ' class="nf-canc"' : ''}>
+      <td>${F.date(n.data)}</td><td>${esc(n.numero) || '—'}${n.serie ? `<span class="muted"> / ${esc(n.serie)}</span>` : ''}</td>
+      <td><span class="badge ${n.tipo === 'Entrada' ? 'nf-in' : 'nf-out'}">${n.tipo === 'Entrada' ? '↓ Entrada' : '↑ Saída'}</span></td>
+      <td>${esc(n.parceiro)}${n.doc ? `<div class="muted nf-doc">${esc(nfFmtDoc(n.doc))}</div>` : ''}</td>
+      <td class="nf-desc" title="${esc(n.descricao)}">${esc(n.descricao) || '—'}</td><td>${esc(n.categoria)}</td>
+      <td class="n">${F.brl(n.valor)}</td>
+      <td><span class="badge ${n.status === 'Válida' ? 'ativo' : 'cancelado'}">${n.status === 'Válida' ? '● Válida' : '✕ Cancelada'}</span></td>
+      <td class="muted" title="${esc(n.chave)}">${n.chave ? '…' + esc(n.chave.slice(-8)) : '—'}</td>
+      <td>${n.origem === 'local' ? `<button class="icon-btn" type="button" data-del="${esc(n.id)}" aria-label="Excluir a nota ${esc(n.numero)}" title="Excluir">${icon('trash')}</button>` : ''}</td></tr>`).join('')
+    : `<tr><td colspan="10" style="text-align:center;padding:28px" class="muted">Nenhuma nota no período. Use “Adicionar nota” para lançar a primeira.</td></tr>`;
+  body.querySelector('#nfCount').textContent = rows.length ? `${rows.length} nota${rows.length > 1 ? 's' : ''} · ${F.money(sum(rows.filter(n => n.status === 'Válida'), 'valor'))} em notas válidas` : '';
+  body.querySelector('#nfPager').innerHTML = pages > 1 ? Array.from({length:pages}, (_, i) => `<button type="button" data-p="${i}" aria-current="${i === NF_TBL.page}">${i + 1}</button>`).join('') : '';
+}
+const nfQtd = q => `${F.int(q)} nota${q === 1 ? '' : 's'}`;
+const nfFmtDoc = d => d.length === 14 ? d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5') : d.length === 11 ? d.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4') : d;
+
+/* Diálogo "Adicionar nota" */
+function nfAbrirDialogo(){
+  const dlg = document.getElementById('nfDialog'), fm = document.getElementById('nfForm');
+  fm.reset(); document.getElementById('nfMsg').textContent = '';
+  fm.elements.data.value = new Date().toISOString().slice(0, 10);
+  document.getElementById('nfCats').innerHTML = uniq([...DATA.despesas.map(d => d.categoria), 'Produtos', 'Mensalidades', 'Serviços', 'Outros']).map(c => `<option value="${esc(c)}"></option>`).join('');
+  dlg.showModal();
+}
+function nfPreencher(c){
+  const fm = document.getElementById('nfForm'), d = parseDate(c.data);
+  if (d) fm.elements.data.value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  ['numero', 'serie', 'parceiro', 'descricao', 'chave'].forEach(k => { if (c[k]) fm.elements[k].value = c[k]; });
+  if (c.doc) fm.elements.doc.value = nfFmtDoc(String(c.doc).replace(/\D/g, ''));
+  if (c.valor) fm.elements.valor.value = num(c.valor).toFixed(2);
+  if (c.tipo) fm.elements.tipo.value = c.tipo;
+}
+document.getElementById('nfXml').addEventListener('change', async e => {
+  const f = e.target.files[0]; e.target.value = ''; const msg = document.getElementById('nfMsg');
+  if (!f) return;
+  try { nfPreencher(nfLerXML(await f.text())); msg.className = 'nf-msg ok'; msg.textContent = `XML “${f.name}” lido. Confira os campos e escolha a categoria.`; }
+  catch (err) { msg.className = 'nf-msg bad'; msg.textContent = err.message; }
+});
+document.getElementById('nfCancel').addEventListener('click', () => document.getElementById('nfDialog').close());
+document.getElementById('nfForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const fm = e.target, el = fm.elements, msg = document.getElementById('nfMsg');
+  const chave = el.chave.value.replace(/\D/g, '');
+  const faltam = [!el.data.value && 'data de emissão', !el.numero.value.trim() && 'número', !el.parceiro.value.trim() && 'emitente/destinatário', !(num(el.valor.value) > 0) && 'valor'].filter(Boolean);
+  if (faltam.length){ msg.className = 'nf-msg bad'; msg.textContent = `Preencha: ${faltam.join(', ')}.`; return; }
+  if (chave && chave.length !== 44){ msg.className = 'nf-msg bad'; msg.textContent = 'A chave de acesso deve ter 44 dígitos (ou deixe em branco).'; return; }
+  const [y, m, d] = el.data.value.split('-').map(Number);
+  const nova = nfNormalizar({data: new Date(y, m - 1, d), numero: el.numero.value, serie: el.serie.value, tipo: el.tipo.value, parceiro: el.parceiro.value,
+    doc: el.doc.value.replace(/\D/g, ''), descricao: el.descricao.value, categoria: el.categoria.value, valor: num(el.valor.value), status: el.status.value, chave}, 'local');
+  if (DATA.notas.some(n => nfChaveUnica(n) === nfChaveUnica(nova))){ msg.className = 'nf-msg bad'; msg.textContent = 'Esta nota já está lançada (mesmo número, série e emitente ou mesma chave).'; return; }
+  DATA.notas.push(nova);
+  const salvo = nfSalvarLocais();
+  document.getElementById('nfDialog').close();
+  nfAtualizar();
+  toast(salvo ? `Nota ${nova.numero} adicionada` : `Nota ${nova.numero} adicionada (não foi possível salvar no navegador: baixe a planilha)`);
+});
+function nfExcluir(id){
+  const n = DATA.notas.find(x => x.id === id);
+  if (!n || !confirm(`Excluir a nota ${n.numero} de ${n.parceiro}?`)) return;
+  DATA.notas = DATA.notas.filter(x => x.id !== id); nfSalvarLocais(); nfAtualizar(); toast('Nota excluída');
+}
+function nfAtualizar(){
+  BASE.opts.periodo = uniq([...BASE.opts.periodo.map(o => o.value), ...DATA.notas.map(n => n.mes)]).sort().map(k => ({value:k, label:mlabel(k)}));
+  ddRefs.periodo?._setOptions(BASE.opts.periodo, state.filters.periodo);
+  renderAll();
+}
+function nfExportar(){
+  if (!window.XLSX){ toast('Leitor de Excel indisponível: verifique a conexão.'); return; }
+  const wb = XLSX.utils.book_new();
+  Object.entries(RAW_BOOK || {}).forEach(([nome, linhas]) => { if (norm(nome).replace(/[\s_]/g, '') !== 'notasfiscais') XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(linhas), nome.slice(0, 31)); });
+  const linhas = [NF_COLS, ...DATA.notas.slice().sort((a, b) => (a.data || 0) - (b.data || 0)).map(n => [F.date(n.data), n.numero, n.serie, n.tipo, n.parceiro === '—' ? '' : n.parceiro, nfFmtDoc(n.doc), n.descricao, n.categoria, n.valor, n.status, n.chave, n.mes ? `${n.mes.slice(5)}/${n.mes.slice(0, 4)}` : ''])];
+  const ws = XLSX.utils.aoa_to_sheet(linhas); ws['!cols'] = [12, 10, 7, 9, 32, 20, 36, 14, 12, 10, 46, 9].map(w => ({wch: w}));
+  XLSX.utils.book_append_sheet(wb, ws, 'NotasFiscais');
+  XLSX.writeFile(wb, `Academia_dados_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  toast('Planilha gerada com a aba NotasFiscais');
+}
+
+/* ---------- 7.5 Operação ---------- */
+function groupMod(tur){
+  const m = new Map();
+  tur.forEach(t => { const g = m.get(t.modalidade) || {name:t.modalidade, alunos:0, rec:0, custo:0, turmas:0}; g.alunos += t.matriculados; g.rec += t.recPot; g.custo += t.custo; g.turmas++; m.set(t.modalidade, g); });
+  return [...m.values()].map(g => ({...g, margem: g.rec - g.custo, pct: g.rec > 0 ? (g.rec - g.custo) / g.rec : null}));
+}
+function renderOps(V){
+  const T = V.tur, cap = sum(T, 'capacidade'), mat = sum(T, 'matriculados'), pres = sum(T, 'presenca');
+  renderKpis('ops', [
+    {id:'turmas', label:'Turmas ativas', sub:'Grade em funcionamento', v:T.length, f:F.int, ref:`${uniq(T.map(t => t.modalidade)).length} modalidades · ${uniq(T.map(t => t.professor)).length} professores`, tip:'Turmas cadastradas na aba Turmas (respeita filtros de modalidade e professor).', dec:'Use o mapa de calor para ver onde a grade está cheia ou ociosa.'},
+    {id:'cap', label:'Capacidade total', sub:'Vagas disponíveis', v:cap, f:F.int, ref:'soma das vagas por turma', tip:'Soma da capacidade das turmas.', dec:'Compare com os matriculados para saber quanto ainda dá para crescer sem investir em espaço.'},
+    {id:'mat', label:'Matriculados', sub:'Vagas ocupadas', v:mat, f:F.int, ref:`${F.int(Math.max(0, cap - mat))} vagas livres`, tip:'Soma dos matriculados nas turmas.', dec:'Vagas livres são receita potencial: direcione campanhas para as turmas com sobra.'},
+    {id:'ocup', label:'Taxa de ocupação', sub:'Uso da capacidade', v:V.ocupMedia, f:F.pct, trend: V.ocupMedia >= .8 ? {up:true, bad:false, t:'alta'} : V.ocupMedia < .5 ? {up:false, bad:true, t:'baixa'} : null, ref:'turmas com capacidade > 0', tip:'Média simples de Matriculados ÷ Capacidade, considerando só turmas com capacidade > 0.', dec:'Abaixo de 50%: junte turmas ou mude o horário. Acima de 80%: abra novas turmas.'},
+    {id:'pres', label:'Taxa de presença', sub:'Matriculados que comparecem', v: mat ? pres/mat : 0, f:F.pct, ref:`${F.dec(pres)} presentes por aula`, tip:'Soma da presença média ÷ soma dos matriculados.', dec:'Queda de presença costuma anteceder cancelamentos: contate os alunos ausentes.'},
+  ]);
+  if (!T.length){ ['ocupTurma','heatmap','margemTurma'].forEach(id => draw(id, {}, {empty:true})); }
+  else {
+    const tc = V.tCap;
+    draw('ocupTurma', tc.length ? {
+      grid:{left:8, right:56, top:22, bottom:8, containLabel:true},
+      tooltip:{trigger:'item', formatter: p => { const t = tc[p.dataIndex]; return `<b>${esc(t.codigo)}</b> · ${esc(t.modalidade)}<br>${esc(t.dia)} ${esc(t.horario)} · ${esc(t.professor)}<br>Ocupação: <b>${F.pct(t.ocup)}</b> (${t.matriculados}/${t.capacidade}) · ${t.status}`; }},
+      xAxis:{type:'category', data: tc.map(t => t.codigo), axisLabel:{interval:0, rotate: W('ocupTurma') < 560 ? 45 : 0, fontSize:10.5}},
+      yAxis:{type:'value', max: v => Math.max(1, Math.ceil(v.max * 10) / 10), axisLabel:{formatter: v => F.pct0(v)}},
+      series:[{type:'bar', barMaxWidth:30, data: tc.map(t => ({value:t.ocup, itemStyle:{color:STATUS_COLOR[t.status]}})),
+        label:{show:true, position:'top', color:C.text, fontSize:10.5, formatter: p => F.pct0(p.value)},
+        markLine:{silent:true, symbol:'none', data:[{yAxis:.8, name:'Alta 80%'}, {yAxis:.5, name:'Média 50%'}], lineStyle:{color:C.g500, type:[4,4], width:1}, label:{position:'end', formatter:'{b}', color:C.muted, fontSize:10}}}],
+    } : {}, {empty: !tc.length, onClick: p => toggleFilter('modalidade', tc[p.dataIndex].modalidade)});
+
+    /* Heatmap dia × faixa */
+    let faixas = DATA.ocupacao.filter(o => o.faixa).map(o => ({label:o.horario, s:o.faixa[0], e:o.faixa[1]}));
+    T.forEach(t => { if (t.hour != null && !faixas.some(f => t.hour >= f.s && t.hour < f.e)) faixas.push({label:`${pad(t.hour)}h`, s:t.hour, e:t.hour + 1}); });
+    faixas.sort((a, b) => a.s - b.s);
+    const dayIdx = uniq([0,1,2,3,4,5, ...T.flatMap(t => t.days)]).sort((a, b) => a - b);
+    const cells = {};
+    T.forEach(t => { if (t.capacidade <= 0 || t.hour == null) return; const fi = faixas.findIndex(f => t.hour >= f.s && t.hour < f.e); t.days.forEach(d => { const k = d + '|' + fi; const c = cells[k] || {cap:0, mat:0, list:[]}; c.cap += t.capacidade; c.mat += t.matriculados; c.list.push(t.codigo); cells[k] = c; }); });
+    const hd = [], bg = [];
+    dayIdx.forEach((d, xi) => faixas.forEach((f, yi) => { const c = cells[d + '|' + yi]; bg.push([xi, yi, 0]); if (c) hd.push({value:[xi, yi, c.mat / c.cap], c}); }));
+    draw('heatmap', {
+      grid:{left:6, right:10, top:6, bottom:44, containLabel:true},
+      tooltip:{trigger:'item', formatter: p => { if (p.seriesIndex === 0) return `${DAY_LABELS[dayIdx[p.value[0]]]} · ${faixas[p.value[1]].label}<br><span style="color:${C.muted}">Sem turma</span>`; const c = p.data.c; return `<b>${DAY_LABELS[dayIdx[p.value[0]]]} · ${faixas[p.value[1]].label}</b><br>Ocupação: <b>${F.pct(p.value[2])}</b> (${c.mat}/${c.cap})<br>Turmas: ${c.list.join(', ')}`; }},
+      xAxis:{type:'category', data: dayIdx.map(d => DAY_LABELS[d]), splitArea:{show:false}, position:'top', axisLabel:{color:C.text}},
+      yAxis:{type:'category', data: faixas.map(f => f.label), inverse:true},
+      visualMap:{seriesIndex:1, min:0, max:1, calculable:false, orient:'horizontal', left:'center', bottom:0, itemWidth:10, itemHeight:140, text:['100%','0%'], textStyle:{color:C.muted, fontSize:10.5}, inRange:{color:['#3A2A2C', C.r700, C.r600, C.r500]}},
+      series:[
+        {type:'heatmap', data:bg, itemStyle:{color:'#18181B', borderColor:C.surface, borderWidth:3, borderRadius:4}, label:{show:true, formatter:'—', color:C.dim, fontSize:10}, emphasis:{disabled:true}},
+        {type:'heatmap', data:hd, itemStyle:{borderColor:C.surface, borderWidth:3, borderRadius:4}, label:{show:true, color:C.text, fontSize:10.5, fontWeight:600, formatter: p => F.pct0(p.value[2])}, emphasis:{itemStyle:{borderColor:C.r200, borderWidth:1}}},
+      ],
+    }, {aria:'Mapa de calor de ocupação por dia da semana e faixa horária'});
+
+    const mt = [...T].sort((a, b) => b.margem - a.margem);
+    draw('margemTurma', {
+      grid:{left:6, right:62, top:6, bottom:6, containLabel:true},
+      tooltip:{trigger:'item', formatter: p => { const t = mt[p.dataIndex]; return `<b>${esc(t.codigo)}</b> · ${esc(t.modalidade)}<br>Receita potencial: ${F.brl0(t.recPot)}<br>Custo mensal: ${F.brl0(t.custo)}<br>Margem: <b>${F.brl0(t.margem)}</b>${t.margemPct != null ? ` (${F.pct(t.margemPct)})` : ''}`; }},
+      xAxis:{type:'value', max: v => v.max > 0 ? v.max * 1.3 : 0, axisLabel:{formatter:F.brlc, fontSize:10}},
+      yAxis:{type:'category', inverse:true, data: mt.map(t => t.codigo), axisLabel:{color:C.text, fontSize:11}},
+      series:[{type:'bar', barMaxWidth:14, data: mt.map(t => ({value:t.margem, itemStyle:{color: t.margem < 0 ? C.r500 : C.g300, borderRadius: t.margem < 0 ? [4,0,0,4] : [0,4,4,0]}, label:{position: t.margem < 0 ? 'insideRight' : 'right'}})),
+        label:{show:true, color:C.text, fontSize:10.5, formatter: p => F.brlc(p.value)},
+        markLine:{silent:true, symbol:'none', data:[{xAxis:0}], lineStyle:{color:C.g500, type:'solid', width:1}, label:{show:false}}}],
+    }, {onClick: p => toggleFilter('modalidade', mt[p.dataIndex].modalidade)});
+  }
+
+  /* Faixas horárias (aba Ocupacao_Horarios) */
+  const O = DATA.ocupacao;
+  draw('faixas', O.length ? {
+    grid:{left:8, right:8, top:36, bottom:8, containLabel:true},
+    legend:{top:0, left:0, data:['Capacidade','Matriculados','Presença média']},
+    tooltip:{trigger:'axis', axisPointer:{type:'shadow', shadowStyle:{color:'rgba(255,255,255,.03)'}}, formatter: ps => { const o = O[ps[0].dataIndex]; return o.capacidade <= 0 ? `<b>${esc(o.horario)}</b><br><span style="color:${C.muted}">Sem turma — oportunidade de grade</span>` : `<b>${esc(o.horario)}</b> · ${o.status}<br>Capacidade: <b>${F.int(o.capacidade)}</b><br>Matriculados: <b>${F.int(o.matriculados)}</b> (${F.pct(o.ocup)})<br>Presença média: <b>${F.dec(o.presenca)}</b>`; }},
+    xAxis:{type:'category', data: O.map(o => o.horario), axisLabel:{interval:0, fontSize:10.5, color: (v, i) => O[i] && O[i].capacidade <= 0 ? C.dim : C.muted}},
+    yAxis:{type:'value', minInterval:1},
+    series:[
+      {name:'Capacidade', type:'bar', barMaxWidth:18, itemStyle:{color:C.g500}, data:O.map(o => o.capacidade),
+        markArea:{silent:true, itemStyle:{color:'rgba(255,255,255,.025)'}, label:{show:true, position:'insideBottom', color:C.muted, fontSize:10, distance:8}, data: O.filter(o => o.capacidade <= 0).map(o => [{xAxis:o.horario, name:'sem\nturma'}, {xAxis:o.horario}])}},
+      {name:'Matriculados', type:'bar', barMaxWidth:18, itemStyle:{color:C.r500}, data:O.map(o => o.matriculados)},
+      {name:'Presença média', type:'bar', barMaxWidth:18, itemStyle:{color:C.r300}, data:O.map(o => o.presenca)},
+    ],
+  } : {}, {empty: !O.length});
+
+  renderMargemMod(V); renderProfRank(V);
+}
+function renderMargemMod(V){
+  setBadge('margemMod');
+  const g = groupMod(V.tur).sort((a, b) => b.margem - a.margem), mx = Math.max(.01, ...g.map(x => Math.abs(x.pct || 0)));
+  const tr = {alunos: sum(g, 'alunos'), rec: sum(g, 'rec'), custo: sum(g, 'custo')}; tr.margem = tr.rec - tr.custo; tr.pct = tr.rec ? tr.margem / tr.rec : 0;
+  const el = document.getElementById('hb-margemMod');
+  el.innerHTML = g.length ? `<div class="tbl-wrap"><table class="t"><thead><tr><th>Modalidade</th><th class="n">Alunos</th><th class="n">Receita potencial</th><th class="n">Custos diretos</th><th class="n">Margem R$</th><th class="n">Margem %</th></tr></thead><tbody>
+    ${g.map(x => `<tr class="click" tabindex="0" data-f="modalidade" data-v="${esc(x.name)}"><td><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${BASE.colors.modalidade(x.name)};margin-right:8px"></span>${esc(x.name)}</td><td class="n">${F.int(x.alunos)}</td><td class="n">${F.brl0(x.rec)}</td><td class="n">${F.brl0(x.custo)}</td><td class="n${x.margem < 0 ? ' neg' : ''}">${F.brl0(x.margem)}</td><td class="n"><div class="mbar"><span class="${(x.pct || 0) < 0 ? 'neg' : ''}">${x.pct == null ? '—' : F.pct(x.pct)}</span><span class="trk"><span class="fil" style="display:block;width:${Math.min(100, Math.abs(x.pct || 0) / mx * 100)}%;background:${(x.pct || 0) < 0 ? C.r500 : C.g300}"></span></span></div></td></tr>`).join('')}
+    <tr style="font-weight:600"><td>Total</td><td class="n">${F.int(tr.alunos)}</td><td class="n">${F.brl0(tr.rec)}</td><td class="n">${F.brl0(tr.custo)}</td><td class="n${tr.margem < 0 ? ' neg' : ''}">${F.brl0(tr.margem)}</td><td class="n${tr.pct < 0 ? ' neg' : ''}">${F.pct(tr.pct)}</td></tr></tbody></table></div>`
+    : `<div class="empty" style="height:180px">${icon('empty')}<span>Sem dados para os filtros selecionados</span></div>`;
+}
+function renderProfRank(V){
+  setBadge('profRank');
+  const m = new Map();
+  V.tur.forEach(t => { const g = m.get(t.professor) || {name:t.professor, turmas:0, mat:0, oc:[]}; g.turmas++; g.mat += t.matriculados; if (t.ocup != null) g.oc.push(t.ocup); m.set(t.professor, g); });
+  const g = [...m.values()].map(x => ({...x, ocup: avg(x.oc)})).sort((a, b) => b.ocup - a.ocup);
+  document.getElementById('hb-profRank').innerHTML = g.length ? `<div class="tbl-wrap"><table class="t"><thead><tr><th>#</th><th>Professor</th><th class="n">Turmas</th><th class="n">Matriculados</th><th class="n">Ocupação média</th></tr></thead><tbody>
+    ${g.map((x, i) => `<tr class="click" tabindex="0" data-f="professor" data-v="${esc(x.name)}"><td><span class="rank${i === 0 ? ' top' : ''}">${i + 1}</span></td><td>${esc(x.name)}</td><td class="n">${F.int(x.turmas)}</td><td class="n">${F.int(x.mat)}</td><td class="n"><div class="mbar"><span>${F.pct(x.ocup)}</span><span class="trk"><span class="fil" style="display:block;width:${Math.min(100, x.ocup * 100)}%;background:${x.ocup >= .8 ? C.r500 : x.ocup >= .5 ? C.r300 : C.g500}"></span></span></div></td></tr>`).join('')}</tbody></table></div>`
+    : `<div class="empty" style="height:180px">${icon('empty')}<span>Sem dados para os filtros selecionados</span></div>`;
+}
+
+/* ---------- 7.6 Projeções + simulador ---------- */
+const SIM_FIELDS = [
+  {k:'cresc', l:'Crescimento mensal', min:0, max:.15, step:.005, f:F.pct, tip:'Crescimento líquido mensal da base. O valor da planilha já considera o churn da premissa.'},
+  {k:'churn', l:'Churn mensal', min:0, max:.15, step:.005, f:F.pct, tip:'Churn acima da premissa reduz o crescimento líquido na mesma proporção (e abaixo dela, aumenta). Também altera o LTV.'},
+  {k:'ticket', l:'Ticket médio', min:80, max:400, step:5, f:F.brl0, tip:'Mensalidade média por aluno ativo.'},
+  {k:'custoFixo', l:'Custos fixos mensais', min:5000, max:40000, step:500, f:F.brl0, tip:'Custos que não variam com o nº de alunos (aluguel, sistema, energia…).'},
+  {k:'margem', l:'Margem de contribuição', min:.3, max:.9, step:.01, f:F.pct0, tip:'Percentual da receita que sobra após custos variáveis.'},
+];
+function defaultSim(){ const P = DATA.prem; return {cresc:P.cresc, churn:P.churn, ticket: BASE.ticketAll || P.mensLutas, custoFixo:P.custoFixo, margem:P.margem}; }
+function buildSim(){
+  const el = document.getElementById('hb-sim');
+  el.innerHTML = `<div class="sim">${SIM_FIELDS.map(s => `<div class="sim-field"><div class="sim-top"><label for="s-${s.k}">${s.l} <button class="info" type="button" data-tip="${esc(s.tip)}" aria-label="Sobre ${esc(s.l)}">i</button></label><output id="o-${s.k}" for="s-${s.k}"></output></div>
+    <input type="range" id="s-${s.k}" min="${s.min}" max="${s.max}" step="${s.step}"><div class="sim-range"><span>${s.f(s.min)}</span><span>${s.f(s.max)}</span></div></div>`).join('')}
+    <button class="btn btn-ghost" type="button" id="simReset" style="justify-content:center">↺ Voltar às premissas da planilha</button>
+    <div class="sim-note" id="simNote"></div></div>`;
+  let raf = null;
+  SIM_FIELDS.forEach(s => el.querySelector('#s-' + s.k).addEventListener('input', e => { state.sim[s.k] = +e.target.value; paintSim(); if (!raf) raf = requestAnimationFrame(() => { raf = null; const a = ANIM; ANIM = false; renderProj(); ANIM = a; }); }));
+  el.querySelector('#simReset').addEventListener('click', () => { state.sim = defaultSim(); syncSim(); renderProj(); toast('Simulador voltou às premissas da planilha'); });
+}
+function paintSim(){
+  SIM_FIELDS.forEach(s => { const inp = document.getElementById('s-' + s.k), v = state.sim[s.k]; document.getElementById('o-' + s.k).textContent = s.f(v); inp.style.setProperty('--p', ((v - s.min) / (s.max - s.min) * 100) + '%'); });
+}
+function syncSim(){ SIM_FIELDS.forEach(s => { document.getElementById('s-' + s.k).value = state.sim[s.k]; }); paintSim(); }
+function renderProj(){
+  const P = DATA.prem, s = state.sim, pr = projection(s), L = BASE.labels, R = pr.rows, last = R[11];
+  renderKpis('proj', [
+    {id:'res12', label:'Resultado no mês 12', sub:'Lucro ou prejuízo projetado', v:last.res, f:F.money, neg:last.res < 0, ref:`${L[11]} · faturamento ${F.money(last.fat)}`, tip:'Faturamento projetado do mês 12 × margem de contribuição − custos fixos.', dec:'Use o simulador para descobrir qual alavanca (alunos, ticket ou custos) leva o resultado ao positivo.'},
+    {id:'be', label:'Break-even', sub:'Mês em que as contas empatam', v: pr.beIdx, f: i => i >= 0 ? L[i] : 'Não atingido', txt:true, noAnim:true, ref: pr.beIdx >= 0 ? `em ${pr.beIdx + 1} ${pr.beIdx ? 'meses' : 'mês'}` : `faturamento do mês 12 = ${F.pct(pr.pe ? last.fat / pr.pe : 0)} do necessário`, tip:'Primeiro mês em que o faturamento projetado alcança o ponto de equilíbrio (custos fixos ÷ margem).', dec:'Não atingido: combine aumento da base com reajuste de ticket ou redução de custos fixos.'},
+    {id:'alPE', label:'Alunos para o break-even', sub:'Base mínima para empatar', v:pr.alunosPE, f:F.int, ref:`${F.brl0(pr.pe)} ÷ ticket ${F.brl0(s.ticket)}`, tip:'Ponto de equilíbrio em R$ ÷ ticket médio simulado.', dec:'Transforme esse número na meta mínima do time comercial.'},
+    {id:'ltvS', label:'LTV simulado', sub:'Valor do aluno no cenário', v:pr.ltv, f:F.money, ref:`crescimento líquido ${pr.gNet >= 0 ? '+' : ''}${F.pct(pr.gNet)} a.m.`, tip:'Ticket × margem ÷ churn, com os valores do simulador.', dec:'Compare com o CAC: o LTV deve ser pelo menos 3x o custo de conquistar o aluno.'},
+  ]);
+  const accMax = Math.max(...R.map(r => r.acum));
+  draw('projFat', {
+    grid:{left:8, right:8, top:44, bottom:8, containLabel:true},
+    legend:{top:0, left:0, data:['Faturamento mensal','Faturamento acumulado','Ponto de equilíbrio']},
+    tooltip:{trigger:'axis', axisPointer:{type:'line', lineStyle:{color:'#3A3A3F'}}, formatter: ps => { const i = ps[0].dataIndex, r = R[i]; return `<b>${L[i]}</b><br>Faturamento mensal: <b>${F.money(r.fat)}</b><br>Acumulado: <b>${F.money(r.acum)}</b><br>Ponto de equilíbrio: ${F.money(pr.pe)} · ${F.pct(pr.pe ? r.fat / pr.pe : 0)} atingido<br>Resultado do mês: <b style="color:${r.res < 0 ? C.r300 : C.text}">${F.money(r.res)}</b>`; }},
+    xAxis:{type:'category', data:L, boundaryGap:false},
+    yAxis:[{type:'value', name:'Mensal', max: v => Math.max(v.max, pr.pe) * 1.08, axisLabel:{formatter:F.brlc}, nameTextStyle:{align:'left'}},
+           {type:'value', name:'Acumulado', axisLabel:{formatter:F.brlc}, splitLine:{show:false}, max: accMax ? undefined : 1, nameTextStyle:{align:'right'}}],
+    series:[
+      {name:'Faturamento acumulado', type:'line', yAxisIndex:1, data:R.map(r => r.acum), symbol:'none', itemStyle:{color:C.r400}, lineStyle:{color:C.r400, width:1.5}, areaStyle:{color:gradient(.35)}, z:1},
+      {name:'Faturamento mensal', type:'line', yAxisIndex:0, data:R.map(r => r.fat), itemStyle:{color:C.g300}, lineStyle:{color:C.g300, width:2.5}, z:3},
+      {name:'Ponto de equilíbrio', type:'line', yAxisIndex:0, data:R.map(() => pr.pe), symbol:'none', itemStyle:{color:C.r300}, lineStyle:{color:C.r300, type:[6,4], width:1.5}, z:2},
+    ],
+  });
+  const meta = P.meta;
+  const co = document.getElementById('metaCallout');
+  co.innerHTML = pr.metaIdx >= 0 ? `<div class="callout ok">${icon('check')}<span>Meta de ${F.int(meta)} alunos atingida em <b>${L[pr.metaIdx]}</b></span></div>`
+    : `<div class="callout">${icon('target')}<span>Meta não atingida em 12 meses — faltam <b>${F.int(Math.ceil(meta - last.alunos))} alunos</b> no mês 12</span></div>`;
+  draw('alunosProj', {
+    grid:{left:8, right:16, top:24, bottom:8, containLabel:true},
+    tooltip:{trigger:'axis', axisPointer:{type:'shadow', shadowStyle:{color:'rgba(255,255,255,.03)'}}, formatter: ps => { const i = ps[0].dataIndex, r = R[i]; return `<b>${L[i]}</b><br>Alunos projetados: <b>${F.dec(r.alunos)}</b><br>Meta: ${F.int(meta)} · ${F.pct(r.alunos / meta)}`; }},
+    xAxis:{type:'category', data:L},
+    yAxis:{type:'value', max: v => Math.max(v.max, meta) * 1.08, axisLabel:{formatter:F.int}},
+    series:[{name:'Alunos projetados', type:'bar', barMaxWidth:26, data: R.map((r, i) => ({value: Math.round(r.alunos * 10) / 10, itemStyle:{color: pr.metaIdx >= 0 && i >= pr.metaIdx ? C.r300 : C.r500}})),
+      label:{show:true, position:'top', color:C.text, fontSize:10.5, formatter: p => F.int(p.value)},
+      markLine:{silent:true, symbol:'none', data:[{yAxis:meta}], lineStyle:{color:C.r300, type:[6,4], width:1.5}, label:{formatter:`Meta ${F.int(meta)}`, position:'insideEndTop', color:C.r300, fontSize:10.5}},
+      markPoint: pr.metaIdx >= 0 ? {symbol:'pin', symbolSize:38, itemStyle:{color:C.r300}, label:{color:C.bg, fontSize:9, formatter:'meta'}, data:[{coord:[pr.metaIdx, R[pr.metaIdx].alunos]}]} : undefined}],
+  });
+  document.getElementById('simNote').innerHTML = `Base inicial: <b style="color:var(--text)">${F.int(BASE.ativosAll)} alunos ativos</b> (aba Alunos). Crescimento líquido aplicado: <b style="color:var(--text)">${pr.gNet >= 0 ? '+' : ''}${F.pct(pr.gNet)} ao mês</b>.`;
+}
+
+/* =====================================================================
+   UI — orquestração, abas, upload, impressão
+   ===================================================================== */
+const RENDER = {overview: renderOverview, finance: renderFinance, nf: renderNF, students: renderStudents, sales: renderSales, ops: renderOps, proj: () => renderProj()};
+const dirty = new Set();
+function renderAll(){ PAGES.forEach(p => dirty.add(p.id)); renderPage(state.tab); }
+function renderPage(id){
+  if (!DATA) return;
+  const V = computeView();
+  try { RENDER[id](V); } catch (e) { console.error('Falha ao renderizar', id, e); }
+  dirty.delete(id);
+}
+function resizePage(id){ const pg = document.getElementById('page-' + id); Object.entries(charts).forEach(([k, c]) => { if (pg.contains(c.getDom())) c.resize(); }); }
+function buildTabs(){
+  document.getElementById('tabs').innerHTML = PAGES.map(p => `<button class="tab" role="tab" type="button" id="tab-${p.id}" data-tab="${p.id}" aria-controls="page-${p.id}" aria-selected="false">${p.label}</button>`).join('');
+  document.getElementById('tabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b) setTab(b.dataset.tab); });
+  document.getElementById('tabs').addEventListener('keydown', e => {
+    if (!['ArrowLeft','ArrowRight'].includes(e.key)) return;
+    const i = PAGES.findIndex(p => p.id === state.tab), n = PAGES[(i + (e.key === 'ArrowRight' ? 1 : -1) + PAGES.length) % PAGES.length];
+    setTab(n.id); document.getElementById('tab-' + n.id).focus();
+  });
+  const mob = makeDropdown({label:'Página', options: PAGES.map(p => ({value:p.id, label:p.label})), value: state.tab, onChange: v => setTab(v)});
+  document.getElementById('tabsMobile').appendChild(mob); ddRefs._tab = mob;
+}
+function setTab(id, initial){
+  state.tab = id;
+  document.querySelectorAll('.tab').forEach(b => { const on = b.dataset.tab === id; b.setAttribute('aria-selected', on); b.tabIndex = on ? 0 : -1; });
+  document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.dataset.page === id));
+  ddRefs._tab?._set(id);
+  save();
+  const mh = document.querySelector('.masthead').offsetHeight;
+  if (!initial && window.scrollY > mh) window.scrollTo({top: mh, behavior: ANIM ? 'smooth' : 'auto'});
+  if (dirty.has(id)) renderPage(id); else resizePage(id);
+}
+function setData(book, sourceLabel){
+  const {data, warn} = loadBook(book);
+  const needed = ['Alunos','Turmas','Receitas','Despesas','Leads'];
+  if (needed.every(n => !getSheet(book, n))) throw new Error('A planilha não contém as abas do modelo (Alunos, Turmas, Receitas, Despesas, Leads).');
+  DATA = data; BASE = buildBase(DATA); RAW_BOOK = book;
+  sanitizeFilters(); buildFilterUI(); renderChips();
+  state.sim = defaultSim(); syncSim();
+  showWarnings(warn);
+  document.getElementById('updated').innerHTML = `<b>Dados até ${F.date(BASE.lastDate)}</b>${esc(sourceLabel)}`;
+  renderAll();
+}
+function sheetsFromWorkbook(wb){
+  const out = {};
+  wb.SheetNames.forEach(n => { out[n] = XLSX.utils.sheet_to_json(wb.Sheets[n], {header:1, raw:true, defval:null, blankrows:false}); });
+  return out;
+}
+
+/* Upload */
+document.getElementById('btnUpload').addEventListener('click', () => document.getElementById('fileInput').click());
+document.getElementById('fileInput').addEventListener('change', async e => {
+  const file = e.target.files[0]; e.target.value = '';
+  if (!file) return;
+  if (!window.XLSX){ showWarnings(['Não foi possível carregar o leitor de Excel (SheetJS). Verifique a conexão com a internet e recarregue a página.'], 'Falha ao ler a planilha'); return; }
+  try {
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, {type:'array', cellDates:false});
+    setData(sheetsFromWorkbook(wb), `Arquivo: ${file.name}`);
+    toast(`Planilha “${file.name}” carregada — painel recalculado`);
+  } catch (err) {
+    console.error(err);
+    showWarnings([err.message || 'Arquivo inválido.', 'Os dados anteriores foram mantidos.'], 'Não foi possível ler a planilha');
+  }
+});
+
+/* Mais filtros */
+const btnMore = document.getElementById('btnMore'), morePanel = document.getElementById('morePanel');
+btnMore.addEventListener('click', e => { e.stopPropagation(); const open = morePanel.hidden; morePanel.hidden = !open; btnMore.setAttribute('aria-expanded', open); });
+document.addEventListener('click', e => {
+  closeAllDropdowns();
+  if (!morePanel.hidden && !morePanel.contains(e.target) && !btnMore.contains(e.target)){ morePanel.hidden = true; btnMore.setAttribute('aria-expanded', 'false'); }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !morePanel.hidden){ morePanel.hidden = true; btnMore.setAttribute('aria-expanded', 'false'); btnMore.focus(); } });
+document.getElementById('chips').addEventListener('click', e => { const c = e.target.closest('.chip'); if (c) setFilter(c.dataset.k, null); });
+document.getElementById('btnClear').addEventListener('click', () => { clearFilters(); toast('Filtros limpos'); });
+document.getElementById('bannerX').addEventListener('click', () => document.getElementById('banner').hidden = true);
+/* Linhas clicáveis (cross-filter nas tabelas) */
+document.getElementById('main').addEventListener('click', e => { const r = e.target.closest('tr.click'); if (r) toggleFilter(r.dataset.f, r.dataset.v); });
+document.getElementById('main').addEventListener('keydown', e => { const r = e.target.closest('tr.click'); if (r && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); toggleFilter(r.dataset.f, r.dataset.v); } });
+document.getElementById('ftInfo').dataset.tip = 'Correções aplicadas: (1) LTV = ticket × margem ÷ churn; (2) ticket médio só com ativos; (3) margem por modalidade com receita potencial das turmas; (4) churn real do período × churn mensal das séries; (5) DRE usa Despesas reais no mês realizado; (6) ocupação média só com capacidade > 0; (7) ponto de equilíbrio também em nº de alunos; (8) LTV/CAC e inadimplência.';
+
+/* Redimensionamento */
+let rzT, lastW = window.innerWidth;
+window.addEventListener('resize', () => { clearTimeout(rzT); rzT = setTimeout(() => {
+  resizePage(state.tab);
+  if (Math.abs(window.innerWidth - lastW) > 40){ lastW = window.innerWidth; const a = ANIM; ANIM = false; PAGES.forEach(p => dirty.add(p.id)); renderPage(state.tab); ANIM = a; }
+}, 140); });
+
+/* Exportar PDF */
+document.getElementById('btnPdf').addEventListener('click', () => {
+  if (!DATA) return;
+  const a = ANIM; ANIM = false;
+  document.body.classList.add('printing');
+  PAGES.forEach(p => { document.getElementById('page-' + p.id).style.display = 'block'; renderPage(p.id); });
+  Object.values(charts).forEach(c => c.resize());
+  setTimeout(() => window.print(), 250);
+  const done = () => {
+    document.body.classList.remove('printing');
+    PAGES.forEach(p => document.getElementById('page-' + p.id).style.display = '');
+    ANIM = a; PAGES.forEach(p => dirty.add(p.id)); renderPage(state.tab);
+    window.removeEventListener('afterprint', done);
+  };
+  window.addEventListener('afterprint', done);
+});
+
+/* =====================================================================
+   INICIALIZAÇÃO
+   ===================================================================== */
+(function init(){
+  restore();
+  buildTabs(); buildPages(); buildSim();
+  setTab(state.tab, true);
+  if (!window.echarts){ showWarnings(['Não foi possível carregar a biblioteca de gráficos (ECharts). Verifique a conexão com a internet e recarregue a página.'], 'Gráficos indisponíveis'); return; }
+  try { setData(EMBEDDED || {}, 'Planilha embutida'); }
+  catch (e) { console.error(e); showWarnings([e.message], 'Não foi possível ler os dados embutidos'); }
+})();
+</script>
+</body>
+</html>

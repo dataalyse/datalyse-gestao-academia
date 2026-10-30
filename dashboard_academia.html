@@ -233,6 +233,47 @@ footer{border-top:1px solid var(--border)}
 .ft-in b{color:var(--text);font-family:var(--f-head);font-weight:600}
 .ft-note{display:inline-flex;align-items:center;gap:8px}
 
+/* ---------- Notas fiscais ---------- */
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.nf-tools-l,.nf-tools-r{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:9px;overflow:hidden;background:var(--surface-2)}
+.seg button{background:none;border:0;color:var(--text-muted);font:500 12.5px var(--f-body);padding:0 12px;height:32px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--red-700);color:var(--text)}
+.badge.nf-in{background:rgba(166,58,64,.14);color:var(--red-200);border:1px solid rgba(166,58,64,.45)}
+.badge.nf-out{background:rgba(181,178,180,.1);color:var(--gray-300);border:1px solid rgba(181,178,180,.3)}
+.nf-doc{font-size:11px;margin-top:2px}
+.nf-desc{max-width:260px;overflow:hidden;text-overflow:ellipsis}
+.t tr.nf-canc td{opacity:.55}
+.t tr.nf-canc td:nth-child(7){text-decoration:line-through}
+.icon-btn{width:30px;height:30px;display:grid;place-items:center;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-muted);cursor:pointer}
+.icon-btn:hover{color:var(--red-300);border-color:var(--red-600)}
+.nf-foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.nf-note{font-size:11.5px;color:var(--text-muted)}
+.nf-dlg{width:min(760px,calc(100vw - 32px));max-height:calc(100vh - 32px);padding:0;border:1px solid var(--border);border-radius:16px;background:var(--surface);color:var(--text);box-shadow:0 30px 80px rgba(0,0,0,.7)}
+.nf-dlg::backdrop{background:rgba(5,5,6,.72);backdrop-filter:blur(3px)}
+.nf-dlg form{padding:20px 22px}
+.nf-dlg-h{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:16px}
+.nf-dlg-h h3{margin:0;font:600 18px var(--f-head)}
+.nf-dlg-h p{margin:4px 0 0;color:var(--text-muted);font-size:12.5px}
+.nf-xml{position:relative;overflow:hidden;cursor:pointer;flex:none}
+.nf-xml input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.nf-xml:focus-within{outline:2px solid var(--red-400);outline-offset:2px}
+.nf-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 14px}
+.nf-grid label{display:flex;flex-direction:column;gap:5px;font-size:11.5px;color:var(--text-muted);font-weight:600;min-width:0}
+.nf-grid label.w2{grid-column:span 2}
+.nf-grid input,.nf-grid select{height:36px;padding:0 10px;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;color:var(--text);font:500 13px var(--f-body);width:100%;color-scheme:dark}
+.nf-grid input:focus,.nf-grid select:focus{outline:none;border-color:var(--red-500);box-shadow:0 0 0 3px rgba(166,58,64,.2)}
+.nf-msg{min-height:18px;margin:12px 0 0;font-size:12.5px}
+.nf-msg.ok{color:var(--gray-300)}.nf-msg.bad{color:var(--red-300)}
+.nf-dlg-f{display:flex;justify-content:flex-end;gap:10px;margin-top:14px}
+@media (max-width:759px){
+  .nf-grid{grid-template-columns:1fr 1fr}
+  .nf-dlg-h{flex-direction:column}
+  .nf-tools-r{width:100%}.nf-tools-r .btn{flex:1;justify-content:center}
+}
+@media (max-width:419px){ .nf-grid{grid-template-columns:1fr} .nf-grid label.w2{grid-column:auto} }
+
 /* ---------- Responsivo ---------- */
 @media (max-width:1439px){
   .mh-inner{grid-template-columns:1fr auto;grid-template-areas:"brand actions" "tabs tabs"}
@@ -317,6 +358,10 @@ body.printing .page{display:block}
     <symbol id="ic-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
     <symbol id="ic-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
     <symbol id="ic-empty" viewBox="0 0 24 24"><path d="M3 3v18h18M7 15l3-3 3 3 5-6"/><path d="M4 4l16 16" stroke-dasharray="2 2"/></symbol>
+    <symbol id="ic-download" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M4 19h16"/></symbol>
+    <symbol id="ic-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="ic-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></symbol>
+    <symbol id="ic-file" viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6zM14 3v6h6M9 14l2 2 4-4"/></symbol>
     <symbol id="ic-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
   </defs>
 </svg>
@@ -365,12 +410,36 @@ body.printing .page{display:block}
 <div id="tip" role="tooltip" hidden></div>
 <div class="toast" id="toast" role="status" hidden></div>
 
+<dialog class="nf-dlg" id="nfDialog" aria-labelledby="nfDlgTitle">
+  <form id="nfForm" novalidate>
+    <div class="nf-dlg-h">
+      <div><h3 id="nfDlgTitle">Adicionar nota fiscal</h3><p>Importe o XML da NF-e/NFS-e ou preencha manualmente.</p></div>
+      <label class="btn btn-ghost nf-xml"><svg class="i"><use href="#ic-file"/></svg><span>Importar XML</span><input type="file" id="nfXml" accept=".xml,text/xml,application/xml"></label>
+    </div>
+    <div class="nf-grid">
+      <label>Tipo<select name="tipo"><option value="Entrada">Entrada (compra)</option><option value="Saída">Saída (emitida)</option></select></label>
+      <label>Data de emissão<input type="date" name="data" required></label>
+      <label>Número<input name="numero" inputmode="numeric" autocomplete="off" required></label>
+      <label>Série<input name="serie" autocomplete="off" placeholder="1, A1, NFS-e…"></label>
+      <label class="w2">Emitente / destinatário<input name="parceiro" autocomplete="off" required placeholder="Fornecedor ou cliente"></label>
+      <label>CNPJ / CPF<input name="doc" inputmode="numeric" autocomplete="off"></label>
+      <label>Categoria<input name="categoria" list="nfCats" autocomplete="off" placeholder="Energia, Manutenção…"><datalist id="nfCats"></datalist></label>
+      <label class="w2">Descrição<input name="descricao" autocomplete="off" placeholder="Produto ou serviço"></label>
+      <label>Valor total (R$)<input name="valor" type="number" min="0" step="0.01" inputmode="decimal" required></label>
+      <label>Status<select name="status"><option>Válida</option><option>Cancelada</option></select></label>
+      <label class="w2">Chave de acesso <span class="muted">(44 dígitos, opcional)</span><input name="chave" inputmode="numeric" autocomplete="off" maxlength="60"></label>
+    </div>
+    <p class="nf-msg" id="nfMsg" role="status"></p>
+    <div class="nf-dlg-f"><button class="btn btn-ghost" type="button" id="nfCancel">Cancelar</button><button class="btn" type="submit">Salvar nota</button></div>
+  </form>
+</dialog>
+
 <script>
 'use strict';
 /* =====================================================================
    CONFIG / TEMA
    ===================================================================== */
-const EMBEDDED = {"Premissas":[["PARÂMETRO","VALOR","UNIDADE","OBSERVAÇÃO"],["Mensalidade média musculação",150,"R$/mês","Exemplo editável"],["Mensalidade média lutas",190,"R$/mês","Exemplo editável"],["Mensalidade média balé",140,"R$/mês","Exemplo editável"],["Taxa média de recebimento",0.97,"%","Receita efetivamente recebida"],["Churn mensal estimado",0.05,"%","Cancelamentos / base inicial"],["CAC estimado",100,"R$/aluno","Custo comercial por novo aluno"],["Margem de contribuição média",0.65,"%","Após custos variáveis"],["Crescimento mensal projetado",0.03,"%","Para projeção de faturamento"],["Custos fixos mensais",18000,"R$/mês","Base inicial"],["Meta de alunos ativos",300,"alunos","Meta gerencial"],["Dias de funcionamento/mês",26,"dias","Premissa operacional"]],"Alunos":[["ID","Nome","Modalidade","Plano","Data Matrícula","Mensalidade","Status","Data Cancelamento","Origem","Observação"],[1,"Aluno 001","Musculação","Mensal","01/09/2026",150,"Ativo",null,"Instagram"],[2,"Aluno 002","Jiu-jítsu","Combate","03/09/2026",190,"Ativo",null,"Google"],[3,"Aluno 003","Muay Thai","Multitreino","05/09/2026",220,"Ativo",null,"Indicação"],[4,"Aluno 004","Balé","Mensal","06/09/2026",140,"Ativo",null,"Instagram"],[5,"Aluno 005","Capoeira","Mensal","10/09/2026",130,"Cancelado","15/09/2026","Instagram"],[6,"Aluno 006","Musculação","Mensal","12/09/2026",150,"Ativo",null,"Indicação"]],"Turmas":[["Código","Modalidade","Dia","Horário","Professor","Capacidade","Matriculados","Presença Média","Ocupação %","Custo Mensal","Receita Potencial","Margem Estimada"],["MUS06","Musculação","Seg-Sáb","06-08h","Equipe",8,7,6.2,0.875,4500,1050,-3.2857142857142856],["MUS08","Musculação","Seg-Sáb","08-10h","Equipe",8,6,5,0.75,4500,900,-4],["MUS18","Musculação","Seg-Sáb","18-20h","Equipe",8,8,7.2,1,4500,1200,-2.75],["JJ19","Jiu-jítsu","Seg","19h","Prof. A",20,17,14,0.85,480,3230,0.8513931888544891],["JJ20","Jiu-jítsu","Qua","19h","Prof. A",20,12,10,0.6,480,2280,0.7894736842105263],["JJ21","Jiu-jítsu","Sex","19h","Prof. A",20,10,8,0.5,480,1900,0.7473684210526316],["MT20","Muay Thai","Ter","20h","Prof. B",20,18,15,0.9,480,3420,0.8596491228070176],["MT20Q","Muay Thai","Qui","20h","Prof. B",20,15,12,0.75,480,2850,0.8315789473684211],["CP18","Capoeira","Qua","18h","Prof. C",20,8,6,0.4,400,1520,0.7368421052631579],["KAR19","Karatê","Qui","19h","Prof. D",20,10,8,0.5,240,1900,0.8736842105263158],["BAL10","Balé","Sáb","10h","Prof. E",15,11,9,0.7333333333333333,240,1540,0.8441558441558441]],"Receitas":[["Data","ID Aluno","Cliente","Modalidade","Tipo","Valor Previsto","Valor Recebido","Forma Pagamento","Status","Mês"],["05/09/2026",1,"Aluno 001","Musculação","Mensalidade",150,150,"PIX","Pago","09/2026"],["05/09/2026",2,"Aluno 002","Jiu-jítsu","Mensalidade",190,190,"Cartão","Pago","09/2026"],["06/09/2026",3,"Aluno 003","Muay Thai","Mensalidade",220,220,"PIX","Pago","09/2026"],["07/09/2026",4,"Aluno 004","Balé","Mensalidade",140,0,"Boleto","Pendente","09/2026"],["10/09/2026",null,null,"Diversas","Produtos",500,500,"PIX","Pago","09/2026"]],"Despesas":[["Data","Categoria","Descrição","Fixa/Variável","Centro Custo","Valor","Pago?","Mês"],["01/09/2026","Pessoal","Professores","Variável","Operação",6500,"Sim","09/2026"],["01/09/2026","Aluguel","Espaço","Fixa","Administrativo",6000,"Sim","09/2026"],["03/09/2026","Energia","Energia elétrica","Fixa","Estrutura",1800,"Sim","09/2026"],["05/09/2026","Marketing","Anúncios","Variável","Comercial",1000,"Sim","09/2026"],["07/09/2026","Manutenção","Equipamentos","Variável","Estrutura",700,"Não","09/2026"],["08/09/2026","Sistema","Software gestão","Fixa","Administrativo",300,"Sim","09/2026"],["10/09/2026","Limpeza","Materiais","Fixa","Estrutura",600,"Sim","09/2026"]],"Leads":[["Data","Nome","Origem","Interesse","Experimental","Compareceu","Matriculou","Valor Plano","CAC","Status"],["01/09/2026","Lead 001","Instagram","Musculação","Sim","Sim","Sim",150,100,"Matriculado"],["02/09/2026","Lead 002","Google","Jiu-jítsu","Sim","Sim","Não",190,100,"Não convertido"],["03/09/2026","Lead 003","Indicação","Muay Thai","Sim","Sim","Sim",220,100,"Matriculado"],["04/09/2026","Lead 004","Instagram","Balé","Sim","Não","Não",140,100,"Sem comparecimento"],["05/09/2026","Lead 005","Facebook","Musculação","Sim","Sim","Sim",150,100,"Matriculado"]],"Churn_Cancelamentos":[["Mês","Base Inicial","Novos Alunos","Cancelamentos","Base Final","Churn %","Retenção %"],["Mês 1",100,5,3,102,0.03,0.97],["Mês 2",102,5,3,104,0.029411764705882353,0.9705882352941176],["Mês 3",104,5,3,106,0.028846153846153848,0.9711538461538461],["Mês 4",106,5,3,108,0.02830188679245283,0.9716981132075472],["Mês 5",108,5,3,110,0.027777777777777776,0.9722222222222222],["Mês 6",110,5,3,112,0.02727272727272727,0.9727272727272728],["Mês 7",112,5,3,114,0.026785714285714284,0.9732142857142857],["Mês 8",114,5,3,116,0.02631578947368421,0.9736842105263158],["Mês 9",116,5,3,118,0.02586206896551724,0.9741379310344828],["Mês 10",118,5,3,120,0.025423728813559324,0.9745762711864406],["Mês 11",120,5,3,122,0.025,0.975],["Mês 12",122,5,3,124,0.02459016393442623,0.9754098360655737]],"Ocupacao_Horarios":[["Horário","Capacidade","Matriculados","Ocupação %","Presença Média","Status"],["06-08h",8,7,0.875,6.2,"Alta"],["08-10h",8,6,0.75,5,"Média"],["10-12h",0,0,0,0,"Baixa"],["12-14h",0,0,0,0,"Baixa"],["14-16h",0,0,0,0,"Baixa"],["16-18h",0,0,0,0,"Baixa"],["18-20h",28,26,0.9285714285714286,22,"Alta"],["20-22h",40,33,0.825,27,"Alta"]]};
+const EMBEDDED = {"Premissas":[["PARÂMETRO","VALOR","UNIDADE","OBSERVAÇÃO"],["Mensalidade média musculação",150,"R$/mês","Exemplo editável"],["Mensalidade média lutas",190,"R$/mês","Exemplo editável"],["Mensalidade média balé",140,"R$/mês","Exemplo editável"],["Taxa média de recebimento",0.97,"%","Receita efetivamente recebida"],["Churn mensal estimado",0.05,"%","Cancelamentos / base inicial"],["CAC estimado",100,"R$/aluno","Custo comercial por novo aluno"],["Margem de contribuição média",0.65,"%","Após custos variáveis"],["Crescimento mensal projetado",0.03,"%","Para projeção de faturamento"],["Custos fixos mensais",18000,"R$/mês","Base inicial"],["Meta de alunos ativos",300,"alunos","Meta gerencial"],["Dias de funcionamento/mês",26,"dias","Premissa operacional"]],"Alunos":[["ID","Nome","Modalidade","Plano","Data Matrícula","Mensalidade","Status","Data Cancelamento","Origem","Observação"],[1,"Aluno 001","Musculação","Mensal","01/09/2026",150,"Ativo",null,"Instagram"],[2,"Aluno 002","Jiu-jítsu","Combate","03/09/2026",190,"Ativo",null,"Google"],[3,"Aluno 003","Muay Thai","Multitreino","05/09/2026",220,"Ativo",null,"Indicação"],[4,"Aluno 004","Balé","Mensal","06/09/2026",140,"Ativo",null,"Instagram"],[5,"Aluno 005","Capoeira","Mensal","10/09/2026",130,"Cancelado","15/09/2026","Instagram"],[6,"Aluno 006","Musculação","Mensal","12/09/2026",150,"Ativo",null,"Indicação"]],"Turmas":[["Código","Modalidade","Dia","Horário","Professor","Capacidade","Matriculados","Presença Média","Ocupação %","Custo Mensal","Receita Potencial","Margem Estimada"],["MUS06","Musculação","Seg-Sáb","06-08h","Equipe",8,7,6.2,0.875,4500,1050,-3.2857142857142856],["MUS08","Musculação","Seg-Sáb","08-10h","Equipe",8,6,5,0.75,4500,900,-4],["MUS18","Musculação","Seg-Sáb","18-20h","Equipe",8,8,7.2,1,4500,1200,-2.75],["JJ19","Jiu-jítsu","Seg","19h","Prof. A",20,17,14,0.85,480,3230,0.8513931888544891],["JJ20","Jiu-jítsu","Qua","19h","Prof. A",20,12,10,0.6,480,2280,0.7894736842105263],["JJ21","Jiu-jítsu","Sex","19h","Prof. A",20,10,8,0.5,480,1900,0.7473684210526316],["MT20","Muay Thai","Ter","20h","Prof. B",20,18,15,0.9,480,3420,0.8596491228070176],["MT20Q","Muay Thai","Qui","20h","Prof. B",20,15,12,0.75,480,2850,0.8315789473684211],["CP18","Capoeira","Qua","18h","Prof. C",20,8,6,0.4,400,1520,0.7368421052631579],["KAR19","Karatê","Qui","19h","Prof. D",20,10,8,0.5,240,1900,0.8736842105263158],["BAL10","Balé","Sáb","10h","Prof. E",15,11,9,0.7333333333333333,240,1540,0.8441558441558441]],"Receitas":[["Data","ID Aluno","Cliente","Modalidade","Tipo","Valor Previsto","Valor Recebido","Forma Pagamento","Status","Mês"],["05/09/2026",1,"Aluno 001","Musculação","Mensalidade",150,150,"PIX","Pago","09/2026"],["05/09/2026",2,"Aluno 002","Jiu-jítsu","Mensalidade",190,190,"Cartão","Pago","09/2026"],["06/09/2026",3,"Aluno 003","Muay Thai","Mensalidade",220,220,"PIX","Pago","09/2026"],["07/09/2026",4,"Aluno 004","Balé","Mensalidade",140,0,"Boleto","Pendente","09/2026"],["10/09/2026",null,null,"Diversas","Produtos",500,500,"PIX","Pago","09/2026"]],"Despesas":[["Data","Categoria","Descrição","Fixa/Variável","Centro Custo","Valor","Pago?","Mês"],["01/09/2026","Pessoal","Professores","Variável","Operação",6500,"Sim","09/2026"],["01/09/2026","Aluguel","Espaço","Fixa","Administrativo",6000,"Sim","09/2026"],["03/09/2026","Energia","Energia elétrica","Fixa","Estrutura",1800,"Sim","09/2026"],["05/09/2026","Marketing","Anúncios","Variável","Comercial",1000,"Sim","09/2026"],["07/09/2026","Manutenção","Equipamentos","Variável","Estrutura",700,"Não","09/2026"],["08/09/2026","Sistema","Software gestão","Fixa","Administrativo",300,"Sim","09/2026"],["10/09/2026","Limpeza","Materiais","Fixa","Estrutura",600,"Sim","09/2026"]],"Leads":[["Data","Nome","Origem","Interesse","Experimental","Compareceu","Matriculou","Valor Plano","CAC","Status"],["01/09/2026","Lead 001","Instagram","Musculação","Sim","Sim","Sim",150,100,"Matriculado"],["02/09/2026","Lead 002","Google","Jiu-jítsu","Sim","Sim","Não",190,100,"Não convertido"],["03/09/2026","Lead 003","Indicação","Muay Thai","Sim","Sim","Sim",220,100,"Matriculado"],["04/09/2026","Lead 004","Instagram","Balé","Sim","Não","Não",140,100,"Sem comparecimento"],["05/09/2026","Lead 005","Facebook","Musculação","Sim","Sim","Sim",150,100,"Matriculado"]],"Churn_Cancelamentos":[["Mês","Base Inicial","Novos Alunos","Cancelamentos","Base Final","Churn %","Retenção %"],["Mês 1",100,5,3,102,0.03,0.97],["Mês 2",102,5,3,104,0.029411764705882353,0.9705882352941176],["Mês 3",104,5,3,106,0.028846153846153848,0.9711538461538461],["Mês 4",106,5,3,108,0.02830188679245283,0.9716981132075472],["Mês 5",108,5,3,110,0.027777777777777776,0.9722222222222222],["Mês 6",110,5,3,112,0.02727272727272727,0.9727272727272728],["Mês 7",112,5,3,114,0.026785714285714284,0.9732142857142857],["Mês 8",114,5,3,116,0.02631578947368421,0.9736842105263158],["Mês 9",116,5,3,118,0.02586206896551724,0.9741379310344828],["Mês 10",118,5,3,120,0.025423728813559324,0.9745762711864406],["Mês 11",120,5,3,122,0.025,0.975],["Mês 12",122,5,3,124,0.02459016393442623,0.9754098360655737]],"Ocupacao_Horarios":[["Horário","Capacidade","Matriculados","Ocupação %","Presença Média","Status"],["06-08h",8,7,0.875,6.2,"Alta"],["08-10h",8,6,0.75,5,"Média"],["10-12h",0,0,0,0,"Baixa"],["12-14h",0,0,0,0,"Baixa"],["14-16h",0,0,0,0,"Baixa"],["16-18h",0,0,0,0,"Baixa"],["18-20h",28,26,0.9285714285714286,22,"Alta"],["20-22h",40,33,0.825,27,"Alta"]],"NotasFiscais":[["Data Emissão","Número","Série","Tipo","Emitente/Destinatário","CNPJ/CPF","Descrição","Categoria","Valor","Status","Chave de Acesso","Mês"],["03/09/2026","845213","1","Entrada","Concessionária de energia","","Fornecimento de energia elétrica","Energia",1800,"Válida","","09/2026"],["05/09/2026","2214","NFS-e","Entrada","Agência de anúncios","","Gestão de anúncios em redes sociais","Marketing",1000,"Válida","","09/2026"],["07/09/2026","10457","1","Entrada","Assistência técnica de equipamentos","","Manutenção de esteiras e estações","Manutenção",700,"Válida","","09/2026"],["08/09/2026","3381","NFS-e","Entrada","Fornecedor do software de gestão","","Licença mensal do software de gestão","Sistema",300,"Válida","","09/2026"],["10/09/2026","55190","1","Entrada","Distribuidora de produtos de limpeza","","Materiais de limpeza","Limpeza",600,"Válida","","09/2026"],["10/09/2026","101","1","Saída","Consumidor final","","Venda de suplementos e acessórios","Produtos",500,"Válida","","09/2026"]]};
 const C = {bg:'#0B0B0C',surface:'#141416',surface2:'#1C1C1F',border:'#2A2A2E',text:'#F2F0EE',muted:'#9A979A',dim:'#5E5B5F',
   r700:'#6E1F24',r600:'#8E2A30',r500:'#A63A40',r400:'#C0595E',r300:'#D48A8D',r200:'#E6BDBE',g500:'#6B686C',g300:'#B5B2B4',grid:'#222225'};
 const PALETTE = [C.r500, C.r300, C.r700, C.g300, C.r400, C.g500];
@@ -385,6 +454,7 @@ let ANIM = !REDUCED;
 const PAGES = [
   {id:'overview', label:'Visão Geral'},
   {id:'finance', label:'Financeiro'},
+  {id:'nf', label:'Notas fiscais'},
   {id:'students', label:'Alunos & Retenção'},
   {id:'sales', label:'Comercial'},
   {id:'ops', label:'Operação'},
@@ -453,7 +523,11 @@ const SPEC = {
   Leads: {data:{a:['data'],req:1}, nome:{a:['nome']}, origem:{a:['origem'],req:1}, interesse:{a:['interesse'],req:1}, experimental:{a:['experimental'],req:1}, compareceu:{a:['compareceu'],req:1}, matriculou:{a:['matriculou'],req:1}, valorPlano:{a:['valor plano']}, cac:{a:['cac']}, status:{a:['status']}},
   Churn_Cancelamentos: {mes:{a:['mes']}, base:{a:['base inicial'],req:1}, novos:{a:['novos alunos','novos'],req:1}, cancel:{a:['cancelamentos'],req:1}},
   Ocupacao_Horarios: {horario:{a:['horario'],req:1}, capacidade:{a:['capacidade'],req:1}, matriculados:{a:['matriculados'],req:1}, presenca:{a:['presenca media','presenca'],req:1}},
+  NotasFiscais: {data:{a:['data emissao','data de emissao','emissao','data'],req:1}, numero:{a:['numero','n']}, serie:{a:['serie']}, tipo:{a:['tipo']}, parceiro:{a:['emitente/destinatario','emitente / destinatario','emitente','fornecedor','destinatario','parceiro','cliente']}, doc:{a:['cnpj/cpf','cnpj','cpf']}, descricao:{a:['descricao']}, categoria:{a:['categoria']}, valor:{a:['valor total','valor'],req:1}, status:{a:['status','situacao']}, chave:{a:['chave de acesso','chave']}, mes:{a:['mes']}},
 };
+/* Colunas da aba NotasFiscais (opcional) — mesma ordem usada ao exportar a planilha */
+const NF_COLS = ['Data Emissão','Número','Série','Tipo','Emitente/Destinatário','CNPJ/CPF','Descrição','Categoria','Valor','Status','Chave de Acesso','Mês'];
+const NF_LS = 'datalyse.academia.notas.v1';
 const PREM_DEFAULT = {mensMusc:150, mensLutas:190, mensBale:140, taxaReceb:.97, churn:.05, cac:100, margem:.65, cresc:.03, custoFixo:18000, meta:300, dias:26};
 const PREM_RULES = [
   ['mensMusc', s => s.includes('mensalidade') && s.includes('muscula')],
@@ -578,13 +652,61 @@ function loadBook(book){
     const cap = num(r.capacidade), mat = num(r.matriculados), ocup = cap > 0 ? mat/cap : null;
     return {horario: str(r.horario), faixa: parseFaixa(r.horario), capacidade: cap, matriculados: mat, presenca: num(r.presenca), ocup, status: ocup == null ? 'Sem turma' : ocup >= .8 ? 'Alta' : ocup >= .5 ? 'Média' : 'Baixa'};
   });
-  return {data: {prem, alunos, turmas, receitas, despesas, leads, churnRows, ocupacao}, warn};
+  /* Notas fiscais: aba opcional (não gera aviso quando ausente) + notas adicionadas neste navegador */
+  const notasPlanilha = getSheet(book, 'NotasFiscais') ? readTable(book, 'NotasFiscais', warn).map(r => nfNormalizar({
+    data: parseDate(r.data), mes: parseMes(r.mes), numero: str(r.numero), serie: str(r.serie), tipo: str(r.tipo), parceiro: str(r.parceiro),
+    doc: str(r.doc), descricao: str(r.descricao), categoria: str(r.categoria), valor: num(r.valor), status: str(r.status), chave: str(r.chave).replace(/\D/g, '')}, 'planilha')) : [];
+  const notas = nfMesclar(notasPlanilha, nfLocais());
+  return {data: {prem, alunos, turmas, receitas, despesas, leads, churnRows, ocupacao, notas}, warn};
+}
+
+/* ---------- Notas fiscais: normalização, armazenamento local e XML ---------- */
+let nfSeq = 0;
+function nfNormalizar(n, origem){
+  const data = n.data instanceof Date ? n.data : parseDate(n.data);
+  return {id: n.id || `${origem}-${Date.now().toString(36)}-${++nfSeq}`, origem, data, mes: n.mes || mkey(data),
+    numero: str(n.numero), serie: str(n.serie), tipo: norm(n.tipo).startsWith('sai') ? 'Saída' : 'Entrada',
+    parceiro: str(n.parceiro) || '—', doc: str(n.doc), descricao: str(n.descricao), categoria: str(n.categoria) || 'Outros',
+    valor: num(n.valor), status: norm(n.status).startsWith('cancel') ? 'Cancelada' : 'Válida', chave: str(n.chave).replace(/\D/g, '')};
+}
+const nfChaveUnica = n => n.chave && n.chave.length === 44 ? 'k' + n.chave : ['n', n.tipo, n.numero, n.serie, norm(n.parceiro)].join('|');
+function nfMesclar(...listas){ const m = new Map(); listas.flat().forEach(n => { const k = nfChaveUnica(n); if (!m.has(k)) m.set(k, n); }); return [...m.values()]; }
+function nfLocais(){
+  try { return (JSON.parse(localStorage.getItem(NF_LS) || '[]') || []).map(n => nfNormalizar({...n, data: n.data ? new Date(n.data) : null}, 'local')); }
+  catch (e) { return []; }
+}
+function nfSalvarLocais(){
+  try { localStorage.setItem(NF_LS, JSON.stringify(DATA.notas.filter(n => n.origem === 'local').map(n => ({...n, data: n.data ? n.data.toISOString() : null})))); return true; }
+  catch (e) { return false; }
+}
+/* Lê o XML de uma NF-e (modelo 55/65) ou NFS-e padrão ABRASF e devolve os campos encontrados */
+function nfLerXML(texto){
+  const doc = new DOMParser().parseFromString(texto, 'application/xml');
+  if (doc.getElementsByTagName('parsererror').length) throw new Error('O arquivo não é um XML válido.');
+  const tag = (el, nome) => el ? el.getElementsByTagNameNS('*', nome)[0] || null : null;
+  const txt = (el, ...caminho) => { let e = el; for (const n of caminho){ e = tag(e, n); if (!e) return ''; } return (e.textContent || '').trim(); };
+  const infNFe = tag(doc, 'infNFe');
+  if (infNFe){
+    const emit = tag(infNFe, 'emit'), prods = [...infNFe.getElementsByTagNameNS('*', 'xProd')].map(e => e.textContent.trim());
+    const chave = (txt(doc, 'protNFe', 'chNFe') || (infNFe.getAttribute('Id') || '')).replace(/\D/g, '');
+    return {data: txt(infNFe, 'ide', 'dhEmi').slice(0, 10) || txt(infNFe, 'ide', 'dEmi'), numero: txt(infNFe, 'ide', 'nNF'), serie: txt(infNFe, 'ide', 'serie'),
+      parceiro: txt(emit, 'xNome'), doc: txt(emit, 'CNPJ') || txt(emit, 'CPF'), valor: txt(infNFe, 'total', 'ICMSTot', 'vNF'),
+      descricao: prods.length ? prods[0] + (prods.length > 1 ? ` e mais ${prods.length - 1} ite${prods.length > 2 ? 'ns' : 'm'}` : '') : '', chave, tipo: 'Entrada'};
+  }
+  const inf = tag(doc, 'InfNfse') || tag(doc, 'infNFSe');
+  if (inf){
+    const prest = tag(inf, 'PrestadorServico') || tag(inf, 'Prestador') || tag(inf, 'emit');
+    return {data: (txt(inf, 'DataEmissao') || txt(inf, 'dhEmi') || txt(inf, 'dhProc')).slice(0, 10), numero: txt(inf, 'Numero') || txt(inf, 'nNFSe'), serie: 'NFS-e',
+      parceiro: txt(prest, 'RazaoSocial') || txt(prest, 'xNome'), doc: txt(prest, 'Cnpj') || txt(prest, 'CNPJ') || txt(prest, 'Cpf'),
+      valor: txt(inf, 'ValorServicos') || txt(inf, 'vServ') || txt(inf, 'vLiq'), descricao: txt(inf, 'Discriminacao') || txt(inf, 'xDescServ'), chave: '', tipo: 'Entrada'};
+  }
+  throw new Error('Não reconheci o layout deste XML. Preencha os campos manualmente.');
 }
 
 /* =====================================================================
    CÁLCULOS (KPIs) — fórmulas corrigidas pela Datalyse
    ===================================================================== */
-let DATA = null, BASE = null;
+let DATA = null, BASE = null, RAW_BOOK = null;
 function colorMap(names){ const m = new Map(); names.forEach((n,i) => m.set(n, PALETTE[i % PALETTE.length])); return n => m.get(n) || C.g500; }
 
 function buildBase(D){
@@ -630,7 +752,7 @@ function buildBase(D){
   const modalidades = uniq([...D.turmas.map(t => t.modalidade), ...D.alunos.map(a => a.modalidade), ...D.leads.map(l => l.interesse), ...D.receitas.map(r => r.modalidade)]).filter(m => !['diversas','—','-','geral','todas'].includes(norm(m)));
   const origens = uniq([...D.alunos.map(a => a.origem), ...D.leads.map(l => l.origem)]).filter(o => o !== '—');
   const opts = {
-    periodo: uniq([...fin, ...D.leads.map(l => l.mk), ...D.alunos.map(a => a.mk)]).sort().map(k => ({value:k, label:mlabel(k)})),
+    periodo: uniq([...fin, ...D.leads.map(l => l.mk), ...D.alunos.map(a => a.mk), ...D.notas.map(n => n.mes)]).sort().map(k => ({value:k, label:mlabel(k)})),
     modalidade: modalidades.map(v => ({value:v, label:v})),
     professor: uniq(D.turmas.map(t => t.professor)).map(v => ({value:v, label:v})),
     plano: uniq(D.alunos.map(a => a.plano)).filter(v => v !== '—').map(v => ({value:v, label:v})),
@@ -677,7 +799,8 @@ function computeView(){
   const snap = k => { const d = endOf(k); const at = D.alunos.filter(a => inMod(a.modalidade) && (!f.plano || a.plano === f.plano) && (!f.origem || a.origem === f.origem) && a.matricula && a.matricula <= d && (a.status !== 'Cancelado' || (a.cancelamento && a.cancelamento > d))); return {n: at.length, mrr: sum(at, 'mensalidade')}; };
   const snapCur = snap(refK), snapPrev = snap(addMonths(refK, -1));
   const mrr = sum(ativos, 'mensalidade');
-  return {mrr, snapCur, snapPrev, al, ativos, canc, rec, des, leads, tur, tCap, ticket, churnReal, prev, receb, inad, novosLeads, cacReal, cac, ltv, ltvCac, peR, peAl, ocupMedia, despTot: sum(des, 'valor')};
+  const nf = D.notas.filter(n => !f.periodo || n.mes === f.periodo);
+  return {nf, mrr, snapCur, snapPrev, al, ativos, canc, rec, des, leads, tur, tCap, ticket, churnReal, prev, receb, inad, novosLeads, cacReal, cac, ltv, ltvCac, peR, peAl, ocupMedia, despTot: sum(des, 'valor')};
 }
 
 function projection(s){
@@ -804,6 +927,11 @@ const PAGE_LAYOUT = {
     {id:'formaPie', t:'Receita por forma de pagamento', s:'Valor previsto · clique para filtrar', span:4, h:300, ap:['periodo','modalidade','forma']},
     {id:'cash', t:'Saldo de caixa acumulado · 12 meses', s:'Fluxo de caixa: entradas líquidas − saídas', span:8, h:300, ap:['periodo']},
     {id:'dreTable', t:'DRE gerencial · 12 meses', s:'Colunas com fundo destacado são projeções a partir das premissas', span:12, html:true, ap:['periodo']},
+  ]},
+  nf: {title:'Notas fiscais', desc:'Controle das notas de entrada (compras e serviços) e das notas emitidas pela academia.', kpis:5, cards:[
+    {id:'nfMes', t:'Notas por mês · entradas × saídas', s:'Valor total das notas válidas', span:6, h:300, ap:['periodo']},
+    {id:'nfConc', t:'Conciliação · despesas × notas de entrada', s:'Por categoria: mostra o que foi pago sem nota fiscal', span:6, h:300, ap:['periodo']},
+    {id:'nfTable', t:'Notas lançadas', s:'Busque, filtre por tipo, importe o XML ou adicione uma nota manualmente', span:12, html:true, ap:['periodo']},
   ]},
   students: {title:'Alunos & Retenção', desc:'Base de alunos, cancelamentos e evolução da retenção.', kpis:5, cards:[
     {id:'churnLines', t:'Churn Rate × Retention Rate · 12 meses', s:'Taxa de cancelamento e de retenção mês a mês', span:6, h:300, ap:['periodo']},
@@ -1297,6 +1425,165 @@ function renderPerdas(V){
     : `<div class="empty" style="height:200px">${icon('check')}<span>${V.leads.length ? 'Nenhum lead perdido no filtro' : 'Sem dados para os filtros selecionados'}</span></div>`;
 }
 
+/* ---------- Notas fiscais ---------- */
+const NF_TBL = {q:'', tipo:null, page:0};
+function nfConciliacao(V){
+  const des = DATA.despesas.filter(d => !state.filters.periodo || d.mes === state.filters.periodo);
+  const ent = V.nf.filter(n => n.tipo === 'Entrada' && n.status === 'Válida');
+  const cats = uniq([...des.map(d => d.categoria), ...ent.map(n => n.categoria)]);
+  const linhas = cats.map(c => { const d = sum(des.filter(x => x.categoria === c), 'valor'), n = sum(ent.filter(x => x.categoria === c), 'valor'); return {c, d, n, sem: Math.max(0, d - n)}; })
+    .sort((a, b) => b.d - a.d || b.n - a.n);
+  const totalDes = sum(des, 'valor'), coberto = sum(linhas, l => Math.min(l.d, l.n));
+  return {linhas, totalDes, coberto, sem: totalDes - coberto};
+}
+function renderNF(V){
+  const val = V.nf.filter(n => n.status === 'Válida'), canc = V.nf.length - val.length;
+  const ent = sum(val.filter(n => n.tipo === 'Entrada'), 'valor'), sai = sum(val.filter(n => n.tipo === 'Saída'), 'valor');
+  const cj = nfConciliacao(V), cob = cj.totalDes ? cj.coberto / cj.totalDes : 0;
+  renderKpis('nf', [
+    {id:'qtd', label:'Notas no período', sub:'Notas fiscais válidas', v:val.length, f:F.int, ref: canc ? `${F.int(canc)} cancelada${canc > 1 ? 's' : ''}` : 'nenhuma cancelada', tip:'Quantidade de notas com status Válida no período filtrado.', dec:'Confira se toda compra e todo serviço contratado gerou nota: é a base da contabilidade e da comprovação de gastos.'},
+    {id:'ent', label:'Notas de entrada', sub:'Compras e serviços recebidos', v:ent, f:F.money, ref: nfQtd(val.filter(n => n.tipo === 'Entrada').length), tip:'Soma do valor das notas de entrada válidas (emitidas por fornecedores para a academia).', dec:'Compare com as despesas: a diferença é o que foi pago sem nota.'},
+    {id:'sai', label:'Notas de saída', sub:'Emitidas pela academia', v:sai, f:F.money, ref: nfQtd(val.filter(n => n.tipo === 'Saída').length), tip:'Soma do valor das notas emitidas pela academia (serviços e venda de produtos).', dec:'Confronte com a receita recebida para conferir se as vendas estão sendo faturadas.'},
+    {id:'cob', label:'Cobertura fiscal', sub:'Despesas com nota fiscal', v:cob, f:F.pct, trend: cj.totalDes ? (cob >= .8 ? {up:true, bad:false, t:'boa'} : {up:false, bad:true, t:'abaixo de 80%'}) : null, ref:`${F.money(cj.coberto)} de ${F.money(cj.totalDes)}`, tip:'Parte das despesas do período que tem nota de entrada na mesma categoria.', dec:'Cobre nota dos fornecedores que faltam. Folha de pagamento e aluguel costumam ter outros comprovantes (holerite, recibo).'},
+    {id:'sem', label:'Despesas sem nota', sub:'Valor pago sem nota fiscal', v:cj.sem, f:F.money, neg: cj.sem > 0, ref:'veja a conciliação por categoria', tip:'Despesas do período − valor coberto por notas de entrada, categoria a categoria.', dec:'Priorize as categorias com maior valor sem nota no gráfico de conciliação.'},
+  ]);
+
+  /* Entradas × saídas por mês (todas as notas válidas; o mês filtrado fica em destaque) */
+  const todas = DATA.notas.filter(n => n.status === 'Válida');
+  const meses = uniq(todas.map(n => n.mes)).sort();
+  const destaque = k => !state.filters.periodo || state.filters.periodo === k ? 1 : .35;
+  draw('nfMes', meses.length ? {
+    grid:{left:8, right:8, top:36, bottom:8, containLabel:true},
+    legend:{top:0, left:0},
+    tooltip: axisTip(F.money),
+    xAxis:{type:'category', data: meses.map(mlabel)},
+    yAxis:{type:'value', axisLabel:{formatter:F.brlc}},
+    series: [['Entrada', 'Entradas', C.r500], ['Saída', 'Saídas', C.g300]].map(([t, nome, cor]) => ({name:nome, type:'bar', barMaxWidth:26, barGap:'12%', itemStyle:{color:cor},
+      data: meses.map(k => ({value: sum(todas.filter(n => n.mes === k && n.tipo === t), 'valor'), itemStyle:{opacity: destaque(k)}})),
+      label:{show: meses.length <= 6, position:'top', color:C.text, fontSize:10.5, formatter: p => p.value ? F.brlc(p.value) : ''}})),
+  } : {}, {empty: !meses.length});
+
+  /* Conciliação por categoria */
+  const L = cj.linhas.filter(l => l.d || l.n);
+  draw('nfConc', L.length ? {
+    grid:{left:6, right:16, top:36, bottom:6, containLabel:true},
+    legend:{top:0, left:0},
+    tooltip:{trigger:'axis', axisPointer:{type:'shadow', shadowStyle:{color:'rgba(255,255,255,.03)'}}, formatter: ps => { const l = L[ps[0].dataIndex]; return `<b>${esc(l.c)}</b><br>Despesas: <b>${F.money(l.d)}</b><br>Notas de entrada: <b>${F.money(l.n)}</b><br>${l.sem > 0 ? `<span style="color:${C.r300}">Sem nota: ${F.money(l.sem)}</span>` : 'Coberto por notas'}`; }},
+    xAxis:{type:'value', axisLabel:{formatter:F.brlc, fontSize:10}},
+    yAxis:{type:'category', inverse:true, data: L.map(l => l.c), axisLabel:{color:C.text, fontSize:11.5}},
+    series:[
+      {name:'Despesas', type:'bar', barMaxWidth:12, barGap:'20%', itemStyle:{color:C.g500, borderRadius:[0,4,4,0]}, data: L.map(l => l.d)},
+      {name:'Notas de entrada', type:'bar', barMaxWidth:12, itemStyle:{color:C.r500, borderRadius:[0,4,4,0]}, data: L.map(l => l.n),
+        label:{show:true, position:'right', fontSize:10.5, formatter: p => { const l = L[p.dataIndex]; return l.sem > 0 ? `{s|sem nota ${F.brlc(l.sem)}}` : (l.n ? '{o|✓ coberto}' : ''); }, rich:{s:{color:C.r300}, o:{color:C.g300}}}},
+    ],
+  } : {}, {empty: !L.length});
+
+  renderNFTable(V);
+}
+function renderNFTable(V){
+  if (V) NF_TBL.V = V; V = NF_TBL.V;
+  setBadge('nfTable');
+  const body = document.getElementById('hb-nfTable');
+  if (!body.dataset.init){
+    body.dataset.init = '1';
+    body.innerHTML = `<div class="tbl-tools">
+        <div class="nf-tools-l"><label class="search">${icon('search')}<input type="search" id="nfSearch" placeholder="Buscar por número, fornecedor ou descrição…" aria-label="Buscar notas" autocomplete="off"></label>
+        <div class="seg" role="group" aria-label="Tipo de nota"><button type="button" data-t="" aria-pressed="true">Todas</button><button type="button" data-t="Entrada" aria-pressed="false">Entradas</button><button type="button" data-t="Saída" aria-pressed="false">Saídas</button></div></div>
+        <div class="nf-tools-r"><button class="btn btn-ghost" type="button" id="nfExport">${icon('download')}<span>Baixar planilha com as notas</span></button><button class="btn" type="button" id="nfAdd">${icon('plus')}<span>Adicionar nota</span></button></div>
+      </div>
+      <div class="tbl-wrap"><table class="t" id="nfTbl"><thead><tr><th>Emissão</th><th>Número / série</th><th>Tipo</th><th>Emitente / destinatário</th><th>Descrição</th><th>Categoria</th><th class="n">Valor</th><th>Status</th><th>Chave de acesso</th><th><span class="sr">Ações</span></th></tr></thead><tbody></tbody></table></div>
+      <div class="nf-foot"><span class="tbl-count" id="nfCount"></span><span class="nf-note">Notas adicionadas aqui ficam salvas neste navegador. Para guardar ou enviar à contabilidade, use “Baixar planilha com as notas”.</span></div>
+      <div class="pager" id="nfPager"></div>`;
+    body.querySelector('#nfSearch').addEventListener('input', e => { NF_TBL.q = e.target.value; NF_TBL.page = 0; renderNFTable(); });
+    body.querySelector('.seg').addEventListener('click', e => { const b = e.target.closest('button[data-t]'); if (!b) return; NF_TBL.tipo = b.dataset.t || null; NF_TBL.page = 0;
+      body.querySelectorAll('.seg button').forEach(x => x.setAttribute('aria-pressed', x === b)); renderNFTable(); });
+    body.querySelector('#nfAdd').addEventListener('click', () => nfAbrirDialogo());
+    body.querySelector('#nfExport').addEventListener('click', nfExportar);
+    body.querySelector('tbody').addEventListener('click', e => { const b = e.target.closest('button[data-del]'); if (b) nfExcluir(b.dataset.del); });
+    body.querySelector('#nfPager').addEventListener('click', e => { const b = e.target.closest('button[data-p]'); if (b){ NF_TBL.page = +b.dataset.p; renderNFTable(); } });
+  }
+  const q = norm(NF_TBL.q);
+  const rows = V.nf.filter(n => (!NF_TBL.tipo || n.tipo === NF_TBL.tipo) && (!q || norm([n.numero, n.serie, n.parceiro, n.doc, n.descricao, n.categoria, n.chave].join(' ')).includes(q)))
+    .sort((a, b) => (b.data || 0) - (a.data || 0));
+  const pages = Math.max(1, Math.ceil(rows.length / 10)); NF_TBL.page = Math.min(NF_TBL.page, pages - 1);
+  const slice = rows.slice(NF_TBL.page * 10, NF_TBL.page * 10 + 10);
+  body.querySelector('tbody').innerHTML = slice.length ? slice.map(n => `<tr${n.status === 'Cancelada' ? ' class="nf-canc"' : ''}>
+      <td>${F.date(n.data)}</td><td>${esc(n.numero) || '—'}${n.serie ? `<span class="muted"> / ${esc(n.serie)}</span>` : ''}</td>
+      <td><span class="badge ${n.tipo === 'Entrada' ? 'nf-in' : 'nf-out'}">${n.tipo === 'Entrada' ? '↓ Entrada' : '↑ Saída'}</span></td>
+      <td>${esc(n.parceiro)}${n.doc ? `<div class="muted nf-doc">${esc(nfFmtDoc(n.doc))}</div>` : ''}</td>
+      <td class="nf-desc" title="${esc(n.descricao)}">${esc(n.descricao) || '—'}</td><td>${esc(n.categoria)}</td>
+      <td class="n">${F.brl(n.valor)}</td>
+      <td><span class="badge ${n.status === 'Válida' ? 'ativo' : 'cancelado'}">${n.status === 'Válida' ? '● Válida' : '✕ Cancelada'}</span></td>
+      <td class="muted" title="${esc(n.chave)}">${n.chave ? '…' + esc(n.chave.slice(-8)) : '—'}</td>
+      <td>${n.origem === 'local' ? `<button class="icon-btn" type="button" data-del="${esc(n.id)}" aria-label="Excluir a nota ${esc(n.numero)}" title="Excluir">${icon('trash')}</button>` : ''}</td></tr>`).join('')
+    : `<tr><td colspan="10" style="text-align:center;padding:28px" class="muted">Nenhuma nota no período. Use “Adicionar nota” para lançar a primeira.</td></tr>`;
+  body.querySelector('#nfCount').textContent = rows.length ? `${rows.length} nota${rows.length > 1 ? 's' : ''} · ${F.money(sum(rows.filter(n => n.status === 'Válida'), 'valor'))} em notas válidas` : '';
+  body.querySelector('#nfPager').innerHTML = pages > 1 ? Array.from({length:pages}, (_, i) => `<button type="button" data-p="${i}" aria-current="${i === NF_TBL.page}">${i + 1}</button>`).join('') : '';
+}
+const nfQtd = q => `${F.int(q)} nota${q === 1 ? '' : 's'}`;
+const nfFmtDoc = d => d.length === 14 ? d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5') : d.length === 11 ? d.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4') : d;
+
+/* Diálogo "Adicionar nota" */
+function nfAbrirDialogo(){
+  const dlg = document.getElementById('nfDialog'), fm = document.getElementById('nfForm');
+  fm.reset(); document.getElementById('nfMsg').textContent = '';
+  fm.elements.data.value = new Date().toISOString().slice(0, 10);
+  document.getElementById('nfCats').innerHTML = uniq([...DATA.despesas.map(d => d.categoria), 'Produtos', 'Mensalidades', 'Serviços', 'Outros']).map(c => `<option value="${esc(c)}"></option>`).join('');
+  dlg.showModal();
+}
+function nfPreencher(c){
+  const fm = document.getElementById('nfForm'), d = parseDate(c.data);
+  if (d) fm.elements.data.value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  ['numero', 'serie', 'parceiro', 'descricao', 'chave'].forEach(k => { if (c[k]) fm.elements[k].value = c[k]; });
+  if (c.doc) fm.elements.doc.value = nfFmtDoc(String(c.doc).replace(/\D/g, ''));
+  if (c.valor) fm.elements.valor.value = num(c.valor).toFixed(2);
+  if (c.tipo) fm.elements.tipo.value = c.tipo;
+}
+document.getElementById('nfXml').addEventListener('change', async e => {
+  const f = e.target.files[0]; e.target.value = ''; const msg = document.getElementById('nfMsg');
+  if (!f) return;
+  try { nfPreencher(nfLerXML(await f.text())); msg.className = 'nf-msg ok'; msg.textContent = `XML “${f.name}” lido. Confira os campos e escolha a categoria.`; }
+  catch (err) { msg.className = 'nf-msg bad'; msg.textContent = err.message; }
+});
+document.getElementById('nfCancel').addEventListener('click', () => document.getElementById('nfDialog').close());
+document.getElementById('nfForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const fm = e.target, el = fm.elements, msg = document.getElementById('nfMsg');
+  const chave = el.chave.value.replace(/\D/g, '');
+  const faltam = [!el.data.value && 'data de emissão', !el.numero.value.trim() && 'número', !el.parceiro.value.trim() && 'emitente/destinatário', !(num(el.valor.value) > 0) && 'valor'].filter(Boolean);
+  if (faltam.length){ msg.className = 'nf-msg bad'; msg.textContent = `Preencha: ${faltam.join(', ')}.`; return; }
+  if (chave && chave.length !== 44){ msg.className = 'nf-msg bad'; msg.textContent = 'A chave de acesso deve ter 44 dígitos (ou deixe em branco).'; return; }
+  const [y, m, d] = el.data.value.split('-').map(Number);
+  const nova = nfNormalizar({data: new Date(y, m - 1, d), numero: el.numero.value, serie: el.serie.value, tipo: el.tipo.value, parceiro: el.parceiro.value,
+    doc: el.doc.value.replace(/\D/g, ''), descricao: el.descricao.value, categoria: el.categoria.value, valor: num(el.valor.value), status: el.status.value, chave}, 'local');
+  if (DATA.notas.some(n => nfChaveUnica(n) === nfChaveUnica(nova))){ msg.className = 'nf-msg bad'; msg.textContent = 'Esta nota já está lançada (mesmo número, série e emitente ou mesma chave).'; return; }
+  DATA.notas.push(nova);
+  const salvo = nfSalvarLocais();
+  document.getElementById('nfDialog').close();
+  nfAtualizar();
+  toast(salvo ? `Nota ${nova.numero} adicionada` : `Nota ${nova.numero} adicionada (não foi possível salvar no navegador: baixe a planilha)`);
+});
+function nfExcluir(id){
+  const n = DATA.notas.find(x => x.id === id);
+  if (!n || !confirm(`Excluir a nota ${n.numero} de ${n.parceiro}?`)) return;
+  DATA.notas = DATA.notas.filter(x => x.id !== id); nfSalvarLocais(); nfAtualizar(); toast('Nota excluída');
+}
+function nfAtualizar(){
+  BASE.opts.periodo = uniq([...BASE.opts.periodo.map(o => o.value), ...DATA.notas.map(n => n.mes)]).sort().map(k => ({value:k, label:mlabel(k)}));
+  ddRefs.periodo?._setOptions(BASE.opts.periodo, state.filters.periodo);
+  renderAll();
+}
+function nfExportar(){
+  if (!window.XLSX){ toast('Leitor de Excel indisponível: verifique a conexão.'); return; }
+  const wb = XLSX.utils.book_new();
+  Object.entries(RAW_BOOK || {}).forEach(([nome, linhas]) => { if (norm(nome).replace(/[\s_]/g, '') !== 'notasfiscais') XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(linhas), nome.slice(0, 31)); });
+  const linhas = [NF_COLS, ...DATA.notas.slice().sort((a, b) => (a.data || 0) - (b.data || 0)).map(n => [F.date(n.data), n.numero, n.serie, n.tipo, n.parceiro === '—' ? '' : n.parceiro, nfFmtDoc(n.doc), n.descricao, n.categoria, n.valor, n.status, n.chave, n.mes ? `${n.mes.slice(5)}/${n.mes.slice(0, 4)}` : ''])];
+  const ws = XLSX.utils.aoa_to_sheet(linhas); ws['!cols'] = [12, 10, 7, 9, 32, 20, 36, 14, 12, 10, 46, 9].map(w => ({wch: w}));
+  XLSX.utils.book_append_sheet(wb, ws, 'NotasFiscais');
+  XLSX.writeFile(wb, `Academia_dados_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  toast('Planilha gerada com a aba NotasFiscais');
+}
+
 /* ---------- 7.5 Operação ---------- */
 function groupMod(tur){
   const m = new Map();
@@ -1461,7 +1748,7 @@ function renderProj(){
 /* =====================================================================
    UI — orquestração, abas, upload, impressão
    ===================================================================== */
-const RENDER = {overview: renderOverview, finance: renderFinance, students: renderStudents, sales: renderSales, ops: renderOps, proj: () => renderProj()};
+const RENDER = {overview: renderOverview, finance: renderFinance, nf: renderNF, students: renderStudents, sales: renderSales, ops: renderOps, proj: () => renderProj()};
 const dirty = new Set();
 function renderAll(){ PAGES.forEach(p => dirty.add(p.id)); renderPage(state.tab); }
 function renderPage(id){
@@ -1496,7 +1783,7 @@ function setData(book, sourceLabel){
   const {data, warn} = loadBook(book);
   const needed = ['Alunos','Turmas','Receitas','Despesas','Leads'];
   if (needed.every(n => !getSheet(book, n))) throw new Error('A planilha não contém as abas do modelo (Alunos, Turmas, Receitas, Despesas, Leads).');
-  DATA = data; BASE = buildBase(DATA);
+  DATA = data; BASE = buildBase(DATA); RAW_BOOK = book;
   sanitizeFilters(); buildFilterUI(); renderChips();
   state.sim = defaultSim(); syncSim();
   showWarnings(warn);

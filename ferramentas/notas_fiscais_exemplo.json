@@ -1,0 +1,9 @@
+[
+  ["Data Emissão", "Número", "Série", "Tipo", "Emitente/Destinatário", "CNPJ/CPF", "Descrição", "Categoria", "Valor", "Status", "Chave de Acesso", "Mês"],
+  ["03/09/2026", "845213", "1", "Entrada", "Concessionária de energia", "", "Fornecimento de energia elétrica", "Energia", 1800, "Válida", "", "09/2026"],
+  ["05/09/2026", "2214", "NFS-e", "Entrada", "Agência de anúncios", "", "Gestão de anúncios em redes sociais", "Marketing", 1000, "Válida", "", "09/2026"],
+  ["07/09/2026", "10457", "1", "Entrada", "Assistência técnica de equipamentos", "", "Manutenção de esteiras e estações", "Manutenção", 700, "Válida", "", "09/2026"],
+  ["08/09/2026", "3381", "NFS-e", "Entrada", "Fornecedor do software de gestão", "", "Licença mensal do software de gestão", "Sistema", 300, "Válida", "", "09/2026"],
+  ["10/09/2026", "55190", "1", "Entrada", "Distribuidora de produtos de limpeza", "", "Materiais de limpeza", "Limpeza", 600, "Válida", "", "09/2026"],
+  ["10/09/2026", "101", "1", "Saída", "Consumidor final", "", "Venda de suplementos e acessórios", "Produtos", 500, "Válida", "", "09/2026"]
+]

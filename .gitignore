@@ -19,3 +19,6 @@ desktop.ini
 
 # Configuração local do Claude Code
 .claude/
+
+# Notas lançadas pelo app mobile (dados de execução)
+mobile/dados/
